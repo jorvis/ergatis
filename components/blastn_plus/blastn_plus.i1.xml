@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>run blastn+</name>
             <state>incomplete</state>
-			<executable>$;BIN_DIR$;/run_blast_plus</executable>
+            <executable>$;BIN_DIR$;/run_blast_plus</executable>
             <param>
                 <key>--blast_plus_bin</key>
                 <value>$;BLASTPLUS_BIN$;</value>
@@ -15,10 +15,6 @@
             <param>
                 <key>--blast_type</key>
                 <value>blastn</value>
-            </param>
-            <param>
-                <key>--task</key>
-                <value>$;ALGORITHM$;</value>
             </param>
             <param>
                 <key>--query</key>
@@ -43,18 +39,10 @@
             <param>
                 <key>--max_target_seqs</key>
                 <value>$;MAX_TARGET_SEQS$;</value>
-			</param>
-            <param>
-                <key>--exclude_gi</key>
-                <value>$;EXCLUDE_GIS$;</value>
             </param>
             <param>
-                <key>--gi_file</key>
-                <value>$;GI_FILE$;</value>
-			</param>
-            <param>
                 <key>--out</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>  
             <param>
                 <key>--other_opts</key>
@@ -62,13 +50,13 @@
             </param>  
             <param>
                 <key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
             </param>  
             <param>
                 <key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
             </param>  
-		</command>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>convert raw to btab</name>

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [ -z "$SCHEMA_DOCS_DIR" ]
 then
     SCHEMA_DOCS_DIR=
@@ -32,6 +32,13 @@ export LC_ALL
 #   a) Choose the correct BLAST output format depending on if --remote is used
 #   b) Format the output using 'blast_formatter' so that both pairwise and m8 formats are present
 
+check_for_success () {
+    if [ $2 -ne 0 ]; then 
+        echo "$1 failed with exit code $2"
+        exit 1
+    fi
+}
+
 while [[ $# -ge 1 ]]
 do
 i="$1"
@@ -61,23 +68,14 @@ case $arg in
     --out)
     out="$val"
     ;;
-	--exclude_gi)
-	exclude_gi="${val:-0}"
-	;;
-	--gi_file)
-	gi_file="$val:-"
-	;;
     --other_opts)
     other_opts="$val"
-	;;
+    ;;
     --query)
     query="$val"
     ;;
-	--remote)
-	remote="${val:-0}"
-	;;
-    --task)
-    task="$val"
+    --remote)
+    remote="${val:-0}"
     ;;
 esac
 shift
@@ -90,31 +88,21 @@ fi
 
 # Setup and run the BLAST+ command
 blast_plus_cmd="${blast_plus_bin}/$blast_type"
-blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -query $query -task $task $other_opts"
+blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -query $query $other_opts"
 
 # For remote searches, output needs to be pairwise.  Non-remote needs to be ASN
 if [ $remote -eq 0 ]; then
-	# If GI file is passed, then filter blast db to either exclude or only use these GI
-	if [ ! -z $gi_file ] && [ -f $gi_file ]; then
-		if [ $exclude_gi -eq 0 ]; then
-			blast_plus_cmd="$blast_plus_cmd -gilist $gi_file"
-		else
-			blast_plus_cmd="$blast_plus_cmd -negative_gilist $gi_file"
-		fi
-	fi
 	# Local version
     blast_plus_cmd="$blast_plus_cmd -outfmt 11 -out $out.asn -max_target_seqs $max_target_seqs"
 else
-	if [ $gi_file ]; then
-		echo "Cannot use GI file to filter BLAST database in 'remote mode': Exiting" >&2
-		exit 1
-	fi
 	# Remote version
     blast_plus_cmd="$blast_plus_cmd -outfmt 0 -out $out -num_descriptions $max_target_seqs -num_alignments $max_target_seqs -remote"
 fi
 
 echo "$blast_plus_cmd"
 $blast_plus_cmd
+
+check_for_success "$blast_plus_cmd" $?
 
 # Time to run blast_formatter, either once or twice depending on -remote
 blast_fmtr_cmd="${blast_plus_bin}/blast_formatter"
@@ -127,8 +115,9 @@ if [ $remote -eq 0 ]; then
     $blast_pairwise_cmd
     echo "$blast_m8_cmd"
     $blast_m8_cmd
-	echo "Now removing ASN file"
-	`rm $out.asn`
+    check_for_success "$blast_m8_cmd" $?
+    echo "Now removing ASN file"
+    `rm $out.asn`
 else
 	# Remote
     RID=$(grep "RID" $out | cut -d' ' -f2 | head -1)
@@ -136,6 +125,7 @@ else
         blast_m8_cmd="$blast_fmtr_cmd -rid $RID -outfmt 6 -out $out.m8"
         echo "$blast_m8_cmd"
         $blast_m8_cmd
+        check_for_success "$blast_m8_cmd" $?
     else
         echo "Cannot obtain RID from BLAST+ remote pairwise output $out: Exiting" >&2
     	exit 1
@@ -143,3 +133,4 @@ else
 fi
 
 exit 0
+
