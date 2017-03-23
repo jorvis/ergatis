@@ -62,7 +62,7 @@
 		<!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create LCA output list</name>
+            <name>create merged output list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
