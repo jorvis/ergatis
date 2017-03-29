@@ -85,7 +85,7 @@ fi
 
 # Setup and run the BLAST+ command
 blast_plus_cmd="${blast_plus_bin}/$blast_type"
-blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -query $query $other_opts"
+blast_plus_cmd="$blast_plus_cmd -db $db -evalue $evalue -query $query $other_opts"
 
 # For remote searches, output needs to be pairwise.  Non-remote needs to be ASN
 if [ $remote -eq 0 ]; then
