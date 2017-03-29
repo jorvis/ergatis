@@ -56,9 +56,6 @@ case $arg in
     --db)
     db="$val"
     ;;
-    --dust)
-    dust="$val"
-    ;;
     --evalue)
     evalue="$val"
     ;;

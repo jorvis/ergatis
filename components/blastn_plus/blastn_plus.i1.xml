@@ -33,10 +33,6 @@
                 <value>$;EXPECT$;</value>
             </param>
             <param>
-                <key>--dust</key>
-                <value>$;FILTER$;</value>
-            </param>
-            <param>
                 <key>--max_target_seqs</key>
                 <value>$;MAX_TARGET_SEQS$;</value>
             </param>
