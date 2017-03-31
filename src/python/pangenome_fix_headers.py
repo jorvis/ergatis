@@ -45,11 +45,13 @@ def replace_fasta_headers(records, replace_vals):
 		for line in replace_vals:
 # Handle the 'assembly' cases or the 'polypeptide' cases
 			if seq_id == line[0]:	# Assembly
-				record.name = 'gnl|' + line[3] + '|' + line[0]	# gnl|org_strain|genome/contig
+				record.id = 'gnl|' + line[3] + '|' + line[0]	# gnl|org_strain|genome/contig
+				record.description = ''
 				updated_records.append(record)
 				break
 			elif seq_id == line[1]:	# Polypeptide
-				record.name = 'gnl|' + line[3] + '|' + line[2]	# gnl|org_strain|locus_tag
+				record.id = 'gnl|' + line[3] + '|' + line[2]	# gnl|org_strain|locus_tag
+				record.description = ''
 				updated_records.append(record)
 				break
 	return updated_records
