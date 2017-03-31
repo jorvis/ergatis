@@ -111,7 +111,7 @@ while (<IN>) {
 	foreach my $qgenome (keys %$results_ref) {
 		foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
 			if (defined $hit_results->{$qgenome}->{$qgene}) {
-				print scalar @{$hit_results->{$qgenome}->{$qgene}}, "\n";
+				#print scalar @{$hit_results->{$qgenome}->{$qgene}}, "\n";
 				$hits_before_add += scalar @{$hit_results->{$qgenome}->{$qgene}};
 			} else {
 				$hits_before_add = 0;
