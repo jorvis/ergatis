@@ -102,7 +102,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>$;ALGORITHM$;_analysis</value>
+                <value>blastn_analysis</value>
             </param>
 	    <param>
                 <key>--split</key>
@@ -140,7 +140,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>$;ALGORITHM$;_analysis</value>
+                <value>blastn_analysis</value>
             </param>
         </command>
         <command>
