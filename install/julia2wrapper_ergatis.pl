@@ -65,8 +65,6 @@ export PERL_MOD_DIR
 
 export PERL5LIB=$instdir/lib/perl5/
 
-export JULIA_PKGDIR=/usr/local/packages/julia-0.5.0/share/julia/site
-
     $julia_path $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
