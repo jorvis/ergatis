@@ -58,7 +58,7 @@ if [ -z "$python_exec" ]; then
 	python_exec="/usr/bin/python"
 fi
 
-cmd="$python_exec ${script_bin}/pangenome_make_pangenome.py --profile=${profile} --output_path=${output_path} --multiplicity=${multiplicity} --comparisons=${comparisons}"
+cmd="$python_exec ${script_bin}/pangenome_make_pangenome.py --profile=${profile} --output_path=${output_path} --multiplicity=${multiplicity} --comparisons=${comparisons} --print_pangenome_genes"
 
 echo "$cmd"
 $cmd
