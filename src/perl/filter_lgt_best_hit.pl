@@ -108,7 +108,6 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use LGT::LGTsam2lca;
 use LGT::LGTBestBlast;
 use GiTaxon;
 

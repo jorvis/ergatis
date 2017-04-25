@@ -8,12 +8,24 @@
                 <state>incomplete</state>
                 <name>SPAdes.assembly</name>
             </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>transdecoder.default</name>
+            </commandSet>
             <commandSet type="parallel">
                 <state>incomplete</state>
             	<commandSet type="serial">
                 	<state>incomplete</state>
-                	<name>sighunt.default</name>
+                	<name>blastp_plus.only</name>
             	</commandSet>
+            	<commandSet type="serial">
+                	<state>incomplete</state>
+                	<name>blastp_plus.exclude</name>
+            	</commandSet>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>blast2lca.default</name>
             </commandSet>
         </commandSet>
     </commandSet>
