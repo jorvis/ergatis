@@ -1,0 +1,27 @@
+<!-- component documentation -->
+
+<p>
+    This is the database creation tool used by the NCBI BLAST suite.   Use individual or multiple FASTA 
+    sequences to create a indexed, searchable database in the format necessary for the ncbi-blast suite 
+    of programs.
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://www.ncbi.nlm.nih.gov/blast/docs/formatdb.html'>http://www.ncbi.nlm.nih.gov/blast/docs/formatdb.html</a>
+</p>
+<h3>input</h3>
+<p>
+    This program accepts FASTA files as input.  It can be a collection of FASTA files, a single FASTA file 
+    containing multiple sequences, or any combination.  Nucleic acid or polypeptide sequences can be used, 
+    but not mixed.
+</p>
+<h3>implemented options</h3>
+<ul class='options'>
+    <li>-p = boolean to specify whether the input sequences are polypeptides</li>
+    <li>-n = creates formatdb database files with the basename 'name'.  This option is required when
+        creating a database with multiple FASTA files.</li>
+</ul>
+<h3>bsml output</h3>
+<p>
+    This component does not generate BSML output.
+</p>
