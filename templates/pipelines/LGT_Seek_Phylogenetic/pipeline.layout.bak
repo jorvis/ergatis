@@ -1,0 +1,71 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start pipeline:</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>SPAdes.assembly</name>
+            </commandSet>
+            <commandSet type="parallel">
+              <state>incomplete</state>
+              <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                  <state>incomplete</state>
+                  <name>blastn_plus.only</name>
+                </commandSet>
+                <commandSet type="serial">
+                  <state>incomplete</state>
+                  <name>concatenate_files.only</name>
+                </commandSet>
+              </commandSet>
+              <commandSet type="serial">
+              <state>incomplete</state>
+                <commandSet type="serial">
+                  <state>incomplete</state>
+                  <name>blastn_plus.exclude</name>
+                </commandSet>
+                <commandSet type="serial">
+                  <state>incomplete</state>
+                  <name>concatenate_files.exclude</name>
+                </commandSet>
+              </commandSet>
+            </commandSet>
+			<!-- Get best hit (bitscore) per query for both blasts -->
+			<!-- Calc h-score (subtract best "only" match from best "exclude" match) -->
+			<!-- Filter out those where h >= 30 and "exclude" bitscore >= 100 (class C gene) -->
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>filter_lgt_class_c_genes.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>formatdb.prot</name>
+            </commandSet>
+			<!-- BlastP for each taxa group -->
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>blastp_plus.ortholog</name>
+            </commandSet>
+			<!-- Use MCL (I=15) to determine ortholog groups -->
+			<!-- Colculate average h-value of each ortholog group -->
+			<!-- Filter class-C genes whose ortholog avg h-score >= 30 (class B gene) -->
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>filter_lgt_class_b_genes.default</name>
+            </commandSet>
+			<!-- Filter class-B genes whose "only" bitscore < 100 -->
+			<!-- ...and no ortholog genes have "only" bitscores >= 100 (class A gene) -->
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>filter_lgt_class_a_genes.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>blast2lca.default</name>
+            </commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
