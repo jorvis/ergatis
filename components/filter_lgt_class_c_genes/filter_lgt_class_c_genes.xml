@@ -83,7 +83,7 @@
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;BSML_OUTPUT_LIST$;</value>
+                <value>$;OUTPUT_LIST$;</value>
             </param>
         </command>
 	</commandSet>
