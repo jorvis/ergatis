@@ -24,10 +24,42 @@
             <type>RunUnixCommand</type>
             <name>write FastOrtho config file</name>
             <state>incomplete</state>
-			<executable>$;BIN_DIR$;/fastortho write config </executable>
+			<executable>$;BIN_DIR$;/fastortho_write_config</executable>
             <param>  
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--max_eval</key>
+                <value>$;MAX_E_VALUE$;</value>
+            </param>
+            <param>  
+                <key>--min_pct_id</key>
+                <value>$;MIN_PERCENT_ID$;</value>
+            </param>
+            <param>  
+                <key>--min_pct_match</key>
+                <value>$;MIN_PERCENT_MATCH$;</value>
+            </param>
+            <param>  
+                <key>--inflation</key>
+                <value>$;INFLATION$;</value>
+            </param>
+            <param>  
+                <key>--num_cpus</key>
+                <value>$;NUM_CPUS$;</value>
+            </param>
+            <param>  
+                <key>--mixed_genomes</key>
+                <value>$;MIXED_GENOMES$;</value>
+            </param>
+            <param>  
+                <key>--input_file</key>
+                <value>$;INPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--input_list</key>
+                <value>$;INPUT_FILE_LIST$;</value>
             </param>
             <param>  
                 <key>stderr</key>
