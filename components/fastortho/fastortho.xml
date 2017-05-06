@@ -62,6 +62,14 @@
                 <value>$;INPUT_FILE_LIST$;</value>
             </param>
             <param>  
+                <key>--blast_bin</key>
+                <value>$;BLASTPLUS_BIN$;</value>
+            </param>
+            <param>  
+                <key>--mcl_bin</key>
+                <value>$;MCL_BIN$;</value>
+            </param>
+            <param>  
                 <key>stderr</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.writeConfig.stderr</value>
             </param>
