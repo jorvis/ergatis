@@ -24,7 +24,7 @@
             <type>RunUnixCommand</type>
             <name>write FastOrtho config file</name>
             <state>incomplete</state>
-			<executable>$;BIN_DIR$;/fastortho_write_config</executable>
+            <executable>$;BIN_DIR$;/fastortho_write_config</executable>
             <param>  
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
@@ -78,8 +78,8 @@
             <type>RunUnixCommand</type>
             <name>run FastOrtho</name>
             <state>incomplete</state>
-			<executable>$;FASTORTHO_BIN$;/src/FastOrtho</executable>
-			<arg>$;OTHER_ARGS$;</arg>
+            <executable>$;FASTORTHO_BIN$;/FastOrtho</executable>
+            <arg>$;OTHER_ARGS$;</arg>
             <param>  
                 <key>--option_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.config</value>
