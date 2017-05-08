@@ -1,9 +1,9 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
-    <commandSet type="serial">
-        <state>incomplete</state>
-        <name>start pipeline:</name>
-        <commandSet type="serial">
-            <state>incomplete</state>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>start pipeline:</name>
+		<commandSet type="parallel">
+			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<commandSet type="serial">
@@ -11,29 +11,29 @@
 					<name>SPAdes.assembly</name>
 				</commandSet>
 				<commandSet type="parallel">
-				  <state>incomplete</state>
-				  <commandSet type="serial">
 					<state>incomplete</state>
 					<commandSet type="serial">
-					  <state>incomplete</state>
-					  <name>blastn_plus.only</name>
+					<state>incomplete</state>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>blastn_plus.only</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>concatenate_files.only</name>
+						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
-					  <state>incomplete</state>
-					  <name>concatenate_files.only</name>
+						<state>incomplete</state>
+							<commandSet type="serial">
+							<state>incomplete</state>
+							<name>blastn_plus.exclude</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>concatenate_files.exclude</name>
+						</commandSet>
 					</commandSet>
-				  </commandSet>
-				  <commandSet type="serial">
-				  <state>incomplete</state>
-					<commandSet type="serial">
-					  <state>incomplete</state>
-					  <name>blastn_plus.exclude</name>
-					</commandSet>
-					<commandSet type="serial">
-					  <state>incomplete</state>
-					  <name>concatenate_files.exclude</name>
-					</commandSet>
-				  </commandSet>
 				</commandSet>
 				<!-- Get best hit (bitscore) per query for both blasts -->
 				<!-- Calc h-score (subtract best "only" match from best "exclude" match) -->
@@ -56,5 +56,5 @@
 				</commandSet>
 			</commandSet>
 		</commandSet>
-    </commandSet>
+	</commandSet>
 </commandSetRoot>

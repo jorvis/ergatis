@@ -9,7 +9,7 @@ classify_class_c_genes.pl - Calculate h-score of two blast files and filter out 
  USAGE: classify_class_c_genes.pl
        --only_file=/path/to/only/blast.m8
        --exclude_file=/path/to/restricted/blast.m8
-       --output_file=/path/to/class_c.tsv
+       --output_dir=/path/to/class_c.tsv
      [ --bitscore_thresh=100
 	   --hscore_thresh=30
 	   --log=/path/to/file.log
@@ -27,8 +27,8 @@ B<--exclude_file>
 	The m8-formatted BLAST output where the subject database excluded those GI accessions from --only_file
 	File should only have the best hit for each query gene
 
-B<--output_file,-o>
-	Name of the output file to write to.  Will be a tab-separated file
+B<--output_dir,-o>
+	Directory to write output into
 
 B<--bitscore_thresh>
 	Keep genes that exceed this bitscore in the --exclude_file.  Default is 100
@@ -86,7 +86,7 @@ sub main {
     my $results = GetOptions (\%options,
                          "only_file=s",
                          "exclude_file=s",
-                         "output_file|o=s",
+                         "output_dir|o=s",
 						 "bitscore_thresh:100",
 						 "hscore_thresh:30",
                          "log|l=s",
@@ -137,18 +137,29 @@ sub calculate_h_score {
 
 sub print_class_c_genes {
 	my ($gene_h, $opts) = @_;
-	my $outfile = $opts->{'output_file'};
+	my $outdir = $opts->{'output_dir'};
+	my $class_c_file = $outdir."/class_c.tsv";
+	my $all_file = $outdir."/all_genes_w_hscore.tsv";
 	my $b_thresh = $opts->{'bitscore_thresh'};
 	my $h_thresh = $opts->{'hscore_thresh'};
-	open OFH, ">".$outfile || die("Cannot open $outfile for writing: $!");
-	print OFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\n";
+	open CFH, ">".$class_c_file || die("Cannot open $class_c_file for writing: $!");
+	open AFH, ">".$all_file || die("Cannot open $all_file for writing: $!");
+	print CFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\n";
+	print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\thighest_lgt_class\n";
 	foreach my $hit (keys %$gene_h) {
+		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" . $gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'};
+		print AFH $gene_str;
+
+		# If gene meets class C thresholds print to that file, and mark it is a class C gene in "all genes" file
 		if ($gene_h->{$hit}->{'h_score'} >= $h_thresh && $gene_h->{$hit}->{'exclude_bit'} >= $b_thresh){
-			print OFH "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" .
-				$gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'} . "\n";
+			print CFH $gene_str . "\n";
+			print AFH "\tC\n";
+		} else {
+			print AFH "\t-\n";
 		}
 	}
-	close OFH;
+	close CFH;
+	close AFH;
 }
 
 sub check_options {
@@ -163,7 +174,7 @@ sub check_options {
 
     $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-    foreach my $req ( qw(only_file exclude_file output_file) ) {
+    foreach my $req ( qw(only_file exclude_file output_dir) ) {
         &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
     }
 }
