@@ -47,6 +47,10 @@
 				<state>incomplete</state>
 				<commandSet type="serial">
 					<state>incomplete</state>
+					<name>split_multifasta.taxa</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
 					<name>translate_sequence.taxa</name>
 				</commandSet>
 				<!-- Run FastOrtho to get orthologous groups -->
