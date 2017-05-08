@@ -61,7 +61,7 @@ my $MAX_WEIGHT = 316;
 my $PROJECT = "lgt";
 my $NUM_ALIGNMENTS = 200;
 my $MIN_PCT_ID = 0.0;
-my $MAX_E_VAL = "1-e5";
+my $MAX_E_VAL = "1e-5";
 my $MIN_PCT_MATCH = 0.0;
 my $INFLATION = 1.5;
 
