@@ -60,6 +60,10 @@ my $MCL_BIN = "/usr/local/bin/";
 my $MAX_WEIGHT = 316;
 my $PROJECT = "lgt";
 my $NUM_ALIGNMENTS = 200;
+my $MIN_PCT_ID = 0.0;
+my $MAX_E_VAL = "1-e5";
+my $MIN_PCT_MATCH = 0.0;
+my $INFLATION = 1.5;
 
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
@@ -77,14 +81,14 @@ sub main {
                          "input_file|i=s",
 						 "input_list|I=s",
                          "output_dir|o=s",
-						 "max_eval|e:1-e5",
-						 "min_pct_id|p:0.0",
-						 "min_pct_match|m:0.0",
-						 "inflation|f:1.5",
+						 "max_eval|e=s",
+						 "min_pct_id|p=f",
+						 "min_pct_match|m=f",
+						 "inflation|f=f",
 						 "num_cpus|n:1",
 						 "mixed_genomes|m:1",
-						 "blast_bin:$BLAST_BIN",
-						 "mcl_bin:$MCL_BIN",
+						 "blast_bin=s",
+						 "mcl_bin=s",
                          "log|l=s",
                          "debug|d=s",
                          "help|h"
@@ -153,6 +157,14 @@ sub check_options {
 	} else {
 		&_log($ERROR, "Need to pass either the --input_file or --input_list option: $!");
 	}
+
+	$opts->{'max_eval'} = $MAX_E_VAL if ! $opts->{'max_eval'};
+	$opts->{'min_pct_id'} = $MIN_PCT_ID if ! $opts->{'min_pct_id'};
+	$opts->{'min_pct_match'} = $MIN_PCT_MATCH if ! $opts->{'min_pct_match'};
+	$opts->{'inflation'} = $INFLATION if ! $opts->{'inflation'};
+	$opts->{'blast_bin'} = $BLAST_BIN if ! $opts->{'blast_bin'};
+	$opts->{'mcl_bin'} = $MCL_BIN if ! $opts->{'mcl_bin'};
+
 }
 
 sub _log {
