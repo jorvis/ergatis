@@ -79,11 +79,7 @@
             <name>run FastOrtho</name>
             <state>incomplete</state>
             <executable>$;FASTORTHO_BIN$;/FastOrtho</executable>
-            <arg>$;OTHER_ARGS$;</arg>
-            <param>  
-                <key>--option_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.config</value>
-            </param>
+			<arg>$;OTHER_ARGS$; --option_file $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.config</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
