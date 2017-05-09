@@ -16,8 +16,8 @@
 			<type>RunUnixCommand</type>
 			<name>get best blast hit by bitscore - "only"</name>
 			<state>incomplete</state>
-			<executable>/bin/sort</executable>
-			<arg> -k1 -k12nr -k11n $;ONLY_FILE$; | /bin/sort -u -k1 --merge</arg>
+			<executable>sort</executable>
+			<arg>-k1 -k12nr -k11n $;ONLY_FILE$; | sort -u -k1 --merge</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.only.best.m8</value>
@@ -27,8 +27,8 @@
 			<type>RunUnixCommand</type>
 			<name>get best blast hit by bitscore - "exclude"</name>
 			<state>incomplete</state>
-			<executable>/bin/sort</executable>
-			<arg> -k1 -k12nr -k11n $;EXCLUDE_FILE$; | /bin/sort -u -k1 --merge</arg>
+			<executable>sort</executable>
+			<arg>-k1 -k12nr -k11n $;EXCLUDE_FILE$; | sort -u -k1 --merge</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.exclude.best.m8</value>

@@ -10,11 +10,25 @@
 					<state>incomplete</state>
 					<commandSet type="serial">
 						<state>incomplete</state>
-						<name>blastp_plus.only</name>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>blastp_plus.only</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>concatenate_files.only</name>
+						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
 						<state>incomplete</state>
-						<name>blastp_plus.exclude</name>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>blastp_plus.exclude</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>concatenate_files.exclude</name>
+						</commandSet>
 					</commandSet>
 				</commandSet>
 				<!-- Get best hit (bitscore) per query for both blasts -->
