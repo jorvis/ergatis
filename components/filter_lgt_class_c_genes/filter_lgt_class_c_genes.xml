@@ -49,11 +49,11 @@
 			</param>
 			<param>
 				<key>--bitscore_thresh</key>
-				<value>$;BITSCORE_THRESHOLD$;</value>
+				<value>$;BITSCORE_THRESH$;</value>
 			</param>
 			<param>
 				<key>--hscore_thresh</key>
-				<value>$;HSCORE_THRESHOLD$;</value>
+				<value>$;HSCORE_THRESH$;</value>
 			</param>
 			<param>
 				<key>--output_dir</key>
