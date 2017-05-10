@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>Transdecoder workflow</name>
+        <name>getorf workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -25,7 +25,7 @@
         <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create condidates list</name>
+            <name>create ORFs fasta list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
@@ -34,11 +34,11 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.txt"</value>
+                <value>".*\.fsa"</value>
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;TXT_OUTPUT_LIST$;</value>
+                <value>$;FSA_OUTPUT_LIST$;</value>
             </param>
         </command>
     </commandSet>

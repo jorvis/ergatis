@@ -10,6 +10,10 @@
 					<state>incomplete</state>
 					<name>SPAdes.assembly</name>
 				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>getorf.assembly</name>
+				</commandSet>
 				<commandSet type="parallel">
 					<state>incomplete</state>
 					<commandSet type="serial">
