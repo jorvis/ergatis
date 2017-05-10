@@ -7,8 +7,8 @@
             <type>RunUnixCommand</type>
             <name>Run EMBOSS getorf</name>
 			<state>incomplete</state>
-			<executable>$;EMBOSS_BIN$;/getorf
-			<args>-sequence $;I_FILE_PATH$; -osdirectory2 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/ -osname2 $;I_FILE_BASE$; -osextension2 .fsa -table $;TABLE$; -minsize $;MIN_ORF_LENGTH$; $;OTHER_OPTS$;</args>
+			<executable>$;EMBOSS_BIN$;/getorf</executable>
+			<arg>-sequence $;I_FILE_PATH$; -osdirectory2 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/ -osname2 $;I_FILE_BASE$; -osextension2 .fsa -table $;TABLE$; -minsize $;MIN_ORF_LENGTH$; $;OTHER_OPTS$;</arg>
 			<param>
 				<key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
