@@ -116,6 +116,7 @@ sub process_child {
     } else {
         # Perform actions on identified components
         process_components_for_stderr($e, $component);
+        process_components_command_strings($e, $component);
     }
 
 #This mostly mirrors command from process_root... only dealing more with component commandSets
@@ -141,7 +142,7 @@ sub process_child {
     }
 }
 
-# Name: process_component_for_stderr
+# Name: process_components_for_stderr
 # Purpose: Iterate through the component's nested XML and add any stderr files to the component hash if the command failed
 # Args: XML Twig element, and the component to store stderr data for
 # Returns: Nothing 
@@ -153,7 +154,8 @@ sub process_components_for_stderr {
               && $command_child->first_child_text('state') =~ /(failed|error)/) {
                 foreach my $param_child ( $command_child->children('param') ) {
                     if ($param_child->first_child_text('key') eq 'stderr') {
-                        $component_list{$component}{'stderr_files'} .= $param_child->first_child_text('value') . "\n";
+                        push @{$component_list{$component}{'stderr_files'}},
+							$param_child->first_child_text('value');
                     }
                 }
             }
@@ -161,26 +163,98 @@ sub process_components_for_stderr {
     }
 }
 
+# Name: process_component_command_strings
+# Purpose: Iterate through the component's nested XML and add any commands to the component hash if the command failed.  The command is converted from XML to an executable string
+# Args: XML Twig element, and the component to store command strings for
+# Returns: Nothing 
+sub process_components_command_strings {
+    my ($e, $component) = @_;
+    if ($component_list{$component}{'state'} =~ /(failed|error)/){
+        foreach my $command_child ( $e->children('command') ) {
+            if ($command_child->has_child('state') 
+              && $command_child->first_child_text('state') =~ /(failed|error)/) {
+			  	my $command_string = '';
+				my $command_args = '';
+				my $arg          = '';
+				my $stdout = '';
+				my $stderr = '';
+
+				## the command itself is within an <executable> element
+				if ( $command_child->has_child('executable') ) {
+					$command_string = $command_child->first_child('executable')->text;
+				} else { 
+					# If there is no executable just skip parsing the rest of this command
+					next; 
+				}
+                foreach my $param_child ( $command_child->children('param') ) {
+					my $key   = $param_child->first_child('key')->text;
+					my $value = $param_child->first_child('value')->text;
+
+					## catch stderr and stdout
+					if ( $key eq 'stdout' ) {
+						$stdout = $value;
+					} elsif ( $key eq 'stderr' ) {
+						$stderr = $value;
+					} else {
+						## if the command type is RunUnixCommand and the key doesn't start with
+						##  the string '-', we need to add it.  this should be fixed later.
+						##  since workflow does it, we have to do it
+
+					    my $type = $command_child->first_child('type')->text;
+						if ( $type eq 'RunUnixCommand' && $key !~ /^\-/ ) {
+							$key = '--' . $key;
+						}
+						$command_args .= " $key=$value";
+					}
+				}
+
+				## snatch the arg element if there was one
+				if ( $command_child->first_child('arg') ) {
+					$arg = $command_child->first_child('arg')->text;
+				}
+
+				## finish the command string build
+				$command_string = "$command_string $command_args $arg";
+				$command_string .= " 1>$stdout" if (length $stdout);
+				$command_string .= " 2>$stderr" if (length $stderr);
+
+            	push @{$component_list{$component}{'command_string'}}, $command_string;
+            }
+        }
+    }
+}
+
 # Name: report_failure_info
 # Purpose: Gather information to help diagnose a failure in the pipeline.
-# Args: Pipeline XML file
+# Args: Pipeline XML file, (optional) pipeline ID
 # Returns: An hash reference with the following elements:
 ### Array reference of failed components
-### String of STDERR file paths, seperated by newline char per file
+### ID of the pipeline
+### Hashref of component keys, for each key an array of stderr files
+### Hashref of component keys, for each key an array of command_strings
 ### Number of components that have completed running
 ### Total number of components in the pipeline
 
 sub report_failure_info {
     my $pipeline_xml = shift;
+	my $pipeline_id = shift;
+
+	# If pipeline ID was not passed, define it here
+	if (! defined($pipeline_id) && $pipeline_xml =~ /runtime\/pipeline\/(\d+)\/pipeline\.xml/) {
+		$pipeline_id = $1;
+	}
+
     build_twig($pipeline_xml);
     # Get progress rate information
     my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
     my $failed_components = find_failed_components(\%component_list);
-
-    my $stderr_files = get_failed_stderr(\%component_list);
+    my $stderr_href = get_failed_stderr(\%component_list);
+	my $cmd_str_href = get_command_strings(\%component_list);
 
     my %failure_info = ('components' => $failed_components, 
-      'stderr_files' => $stderr_files, 
+	  'pipeline_id' => $pipeline_id,
+      'stderr_files' => $stderr_href, 
+	  'command_strings' => $cmd_str_href,
       'complete_components' => $total_complete, 
       'total_components' => $total );
     return \%failure_info;
@@ -229,17 +303,28 @@ sub find_failed_components {
 # Name: get_failed_stderr
 # Purpose: Compile a list of stderr files for every component in failed or error state
 # Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
-# Returns: Array reference of stderr file paths
+# Returns: Hashref listing the component and within each component key, an array of stderr files
 sub get_failed_stderr {
     my $component_href = shift;
-    my $stderr_files;
+    my %stderr;
     foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
-        # Any STDERR files that are not null strings, add to string
-        $stderr_files .= $component_href->{$component}->{'stderr_files'} . "\n" if length $component_href->{$component}->{'stderr_files'};
+        $stderr{$component} = $component_href->{$component}->{'stderr_files'}  if length $component_href->{$component}->{'stderr_files'};
     }
-    return $stderr_files;
+    return \%stderr;
 }
 
+# Name: get_command_strings
+# Purpose: Compile a list of command_strings for every component in failed or error state
+# Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
+# Returns: Hashref listing the component and within each component key, an array of command_strings
+sub get_failed_stderr {
+    my $component_href = shift;
+    my %cmd_str;
+    foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
+        $cmd_str{$component} = $component_href->{$component}->{'command_string'}  if length $component_href->{$component}->{'command_string'};
+    }
+    return \%cmd_str;
+}
 # Name: handle_component_status_changes
 # Purpose: Determine if any pipeline components have changed status since the last cycle, and handle accordingly
 ### Print to STDOUT if the component has entered 'running' status

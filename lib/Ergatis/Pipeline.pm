@@ -590,8 +590,7 @@ umask(0000);
         return 1 if ($p_state eq 'complete');
         if ($p_state =~ /(failed|error)/ ) {
             # Return a hash of useful diagnostics
-            $self->{diagnostics} = report_failure_info($self->{path});
-            #print "files from STDERR " . $self->{diagnostics}->{stderr_files};
+            $self->{diagnostics} = report_failure_info($self->{path}, $self->{id});
         }
         return 0;
     }
