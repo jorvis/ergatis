@@ -4,10 +4,6 @@
         <name>start pipeline:</name>
         <commandSet type="serial">
             <state>incomplete</state>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>getorf.assembly</name>
-            </commandSet>
             <commandSet type="parallel">
                 <state>incomplete</state>
             	<commandSet type="serial">
@@ -35,7 +31,11 @@
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>blast2lca.default</name>
+                <name>getorf.assembly</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>fastortho.taxa</name>
             </commandSet>
         </commandSet>
     </commandSet>

@@ -6,10 +6,6 @@
 			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>getorf.assembly</name>
-				</commandSet>
 				<commandSet type="parallel">
 					<state>incomplete</state>
 					<commandSet type="serial">
@@ -47,11 +43,7 @@
 				<state>incomplete</state>
 				<commandSet type="serial">
 					<state>incomplete</state>
-					<name>split_multifasta.taxa</name>
-				</commandSet>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>translate_sequence.taxa</name>
+					<name>getorf.assembly</name>
 				</commandSet>
 				<!-- Run FastOrtho to get orthologous groups -->
 				<commandSet type="serial">
@@ -59,6 +51,10 @@
 					<name>fastortho.taxa</name>
 				</commandSet>
 			</commandSet>
+		</commandSet>
+		<commandSet type="serial">
+			<state>incomplete</state>
+			<name>filter_lgt_class_b_genes.default</name>
 		</commandSet>
 	</commandSet>
 </commandSetRoot>
