@@ -139,7 +139,7 @@ sub print_class_c_genes {
 	my ($gene_h, $opts) = @_;
 	my $outdir = $opts->{'output_dir'};
 	my $class_c_file = $outdir."/class_c.tsv";
-	my $all_file = $outdir."/all_genes_w_hscore.tsv";
+	my $all_file = $outdir."/all_genes.tsv";
 	my $b_thresh = $opts->{'bitscore_thresh'};
 	my $h_thresh = $opts->{'hscore_thresh'};
 	open CFH, ">".$class_c_file || die("Cannot open $class_c_file for writing: $!");

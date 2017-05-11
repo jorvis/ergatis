@@ -2,15 +2,14 @@
 
 =head1 NAME
 
-classify_class_b_genes.pl - Determine if class C genes are class B LGT genes by the avg h-score of their ortholog group
+classify_class_a_genes.pl - Determine if class C genes are class B LGT genes by the avg h-score of their ortholog group
 
 =head1 SYNOPSIS
 
- USAGE: classify_class_b_genes.pl
-       --input_file=/path/to/hscore/file
-	   --orthlogs_file=/path/to/ortholog/clusters.txt
+ USAGE: classify_class_a_genes.pl
+       --input_file=/path/to/bitscore/file
        --output_dir=/path/to/dir/
-     [ --hscore_thresh=30
+     [ --bitscore_thresh=100
 	   --log=/path/to/file.log
        --debug=3
        --help
@@ -19,16 +18,13 @@ classify_class_b_genes.pl - Determine if class C genes are class B LGT genes by 
 =head1 OPTIONS
 
 B<--input_file,-i>
-	File that lists h_scores of all genes and C-class labelings from classify_class_c_genes.pl
-
-B<--orthologs_file,-O>
-	File from FastOrtho that lists the end-result ortholog clusters
+	File that lists bitscores of all genes and B-class labelings from classify_class_b_genes.pl
 
 B<--output_dir,-o>
 	Directory to write output into
 
-B<--hscore_thresh>
-	Keep genes whose ortholog group's average h-score exceeds this value.  Default is 30
+B<--bitscore_thresh>
+	Keep genes whose "only" bitscore is under this value.  Default is 100
 
 B<--log,-l>
     Logfile.
@@ -80,9 +76,8 @@ exit(0);
 sub main {
     my $results = GetOptions (\%options,
 						 "input_file|i=s",
-						 "orthologs_list|O=s",
                          "output_dir|o=s",
-						 "hscore_thresh:30",
+						 "bitscore_thresh:100",
                          "log|l=s",
                          "debug|d=s",
                          "help|h"
@@ -90,9 +85,7 @@ sub main {
 
     &check_options(\%options);
 	parse_input_file(\%genes, $options{'input_file'});
-	parse_orthologs(\%ortho, $options{'orthologs_file'});
-	calculate_avg_ortho_h_score(\%genes, \%ortho);
-	print_class_b_genes(\%genes, \%options);
+	print_class_a_genes(\%genes, \%options);
 }
 
 sub parse_input_file {
@@ -106,73 +99,47 @@ sub parse_input_file {
 		$gene_h->{$hit[0]}->{'only_bit'} = $hit[3];
 		$gene_h->{$hit[0]}->{'exclude_bit'} = $hit[4];
 		$gene_h->{$hit[0]}->{'h_score'} = $hit[5];
-		$gene_h->{$hit[0]}->{'lgt_class'} = $hit[6];
+		$gene_h->{$hit[0]}->{'cluster'} = $hit[6];
+		$gene_h->{$hit[0]}->{'ortholog_h_score'} = $hit[7];
+		$gene_h->{$hit[0]}->{'lgt_class'} = $hit[8];
 	}
 	close IFH;
 }
 
-sub parse_orthologs {
-	my ($ortho_h, $ortho_file) = @_;
-	open ORTHO, $ortho_file || &_log($ERROR, "Cannot open $ortho_file for reading: $!");
-	while (my $line = <ORTHO>) {
-		chomp $line;
-		# Parse out ortholog ID and genes
-		if ($line =~ /^(\S+)\s\(\d+\sgenes\d+\staxa\):\s+(.+)$/) {
-			my $cluster_id  = $1;
-			my $gene_str = $2;
-			my @gene_arr = split(/\s+/, $gene_str);
-			$ortho_h->{$cluster_id} = \@gene_arr;
-		} else {
-			&_log($WARN, "Line $line did not match the regex.  Please look into this");
-		}
-	}
-	close ORTHO;
-}
-
-sub calculate_avg_ortho_h_score {
-	my ($genes_h, $ortho_h) = @_;
-
-	foreach my $ortholog (keys %$ortho_h) {
-		my $h_score_sum = 0;
-		my $num_genes = scalar @{$ortho_h->{$ortholog}};
-		foreach my $gene (@{$ortho_h->{$ortholog}}){
-			# Get rid of species name
-			$gene =~ s/\(.*$//g;
-			$h_score_sum += $genes_h->{$gene}->{'h_score'};
-		}
-		my $h_score = $h_score_sum/$num_genes;
-		# Insert key for average ortholog h_score for each gene in that ortholog group (for easy retrieval later)
-		foreach my $gene (@{$ortho_h->{$ortholog}}){
-			$genes_h->{$gene}->{'cluster'} = $ortholog;
-			$genes_h->{$gene}->{'ortho_h'} = $h_score;
-		}
-	}
-}
-
-sub print_class_b_genes {
+sub print_class_a_genes {
 	my ($gene_h, $opts) = @_;
 	my $outdir = $opts->{'output_dir'};
-	my $class_b_file = $outdir."/class_b.tsv";
+	my $class_a_file = $outdir."/class_a.tsv";
 	my $all_file = $outdir."/all_genes.tsv";
-	my $h_thresh = $opts->{'hscore_thresh'};
-	open BFH, ">".$class_b_file || &_log($ERROR, "Cannot open $class_b_file for writing: $!");
-	open AFH, ">".$all_file || &_log($ERROR, "Cannot open $all_file for writing: $!");
-	print BFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\n";
-	print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\thighest_lgt_class\n";
+	my $bit_thresh = $opts->{'bitscore_thresh'};
+	open AFH, ">".$class_a_file || &_log($ERROR, "Cannot open $class_a_file for writing: $!");
+	open FH, ">".$all_file || &_log($ERROR, "Cannot open $all_file for writing: $!");
+	print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\n";
+	print FH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\thighest_lgt_class\n";
 	foreach my $hit (keys %$gene_h) {
 		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" . $gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'} . "\t" . $gene_h->{$hit}->{'cluster'} . "\t" . $gene_h->{$hit}->{'ortho_h'};
 		print AFH $gene_str;
 
 		my $lgt_class = $gene_h->{$hit}->{'lgt_class'};
-		# If gene meets class B thresholds print to that file, and mark it is a class B gene in "all genes" file
-		if ($lgt_class eq 'C' && $gene_h->{$hit}->{'ortho_h'} >= $h_thresh){
-			$lgt_class = "B";
-			print BFH $gene_str . "\n";
+		# If class B gene has "only_bit" < 100 and all ortholog members have "only_bit" < 100, then it is a class A gene
+		if ($lgt_class eq 'B' && $gene_h->{$hit}->{'only_bit'} < $bit_thresh){
+			my $class_a_flag = 1;
+			# Verify all other members in this cluster have 'only' bitscores under the threshold
+			foreach my $ortho_hit (keys %$gene_h) {
+				if ($gene_h->{$hit}->{'cluster'} eq $gene_h->{$hit}->{'cluster'} && $gene_h->{$ortho_hit}->{'only_bit'} >= $bit_thresh) {
+					$class_a_flag = 0;
+					last
+				}
+			}
+			if ($class_a_flag) {
+				$lgt_class = "A";
+				print AFH $gene_str . "\n";
+			}
 		}
-		print AFH "\t$lgt_class\n";
+		print FH "\t$lgt_class\n";
 	}
-	close BFH;
 	close AFH;
+	close FH;
 }
 
 sub check_options {
