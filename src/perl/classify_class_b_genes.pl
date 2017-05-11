@@ -143,6 +143,7 @@ sub calculate_avg_ortho_h_score {
 		my $h_score = $h_score_sum/$num_genes;
 		# Insert key for average ortholog h_score for each gene in that ortholog group (for easy retrieval later)
 		foreach my $gene (@{$ortho_h->{$ortholog}}){
+			$genes_h->{$gene}->{'cluster'} = $ortholog;
 			$genes_h->{$gene}->{'ortho_h'} = $h_score;
 		}
 	}
@@ -156,10 +157,10 @@ sub print_class_b_genes {
 	my $h_thresh = $opts->{'hscore_thresh'};
 	open BFH, ">".$class_b_file || &_log($ERROR, "Cannot open $class_b_file for writing: $!");
 	open AFH, ">".$all_file || &_log($ERROR, "Cannot open $all_file for writing: $!");
-	print BFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_h_score\n";
-	print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_h_scorehighest_lgt_class\n";
+	print BFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\n";
+	print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\tortholog_cluster\tortholog_h_score\thighest_lgt_class\n";
 	foreach my $hit (keys %$gene_h) {
-		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" . $gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'} . "\t" . $gene_h->{$hit}->{'ortho_h'};
+		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" . $gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'} . "\t" . $gene_h->{$hit}->{'cluster'} . "\t" . $gene_h->{$hit}->{'ortho_h'};
 		print AFH $gene_str;
 
 		my $lgt_class = $gene_h->{$hit}->{'lgt_class'};
