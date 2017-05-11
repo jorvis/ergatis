@@ -115,8 +115,7 @@ sub process_child {
         }
     } else {
         # Perform actions on identified components
-        process_components_for_stderr($e, $component);
-        process_components_command_strings($e, $component);
+		process_failed_commands($e, $component);
     }
 
 #This mostly mirrors command from process_root... only dealing more with component commandSets
@@ -142,32 +141,11 @@ sub process_child {
     }
 }
 
-# Name: process_components_for_stderr
-# Purpose: Iterate through the component's nested XML and add any stderr files to the component hash if the command failed
+# Name: process_failed_commands
+# Purpose: Iterate through the component's nested XML and add stderr files and command strings to the component hash if the command failed
 # Args: XML Twig element, and the component to store stderr data for
 # Returns: Nothing 
 sub process_components_for_stderr {
-    my ($e, $component) = @_;
-    if ($component_list{$component}{'state'} =~ /(failed|error)/){
-        foreach my $command_child ( $e->children('command') ) {
-            if ($command_child->has_child('state') 
-              && $command_child->first_child_text('state') =~ /(failed|error)/) {
-                foreach my $param_child ( $command_child->children('param') ) {
-                    if ($param_child->first_child_text('key') eq 'stderr') {
-                        push @{$component_list{$component}{'stderr_files'}},
-							$param_child->first_child_text('value');
-                    }
-                }
-            }
-        }
-    }
-}
-
-# Name: process_component_command_strings
-# Purpose: Iterate through the component's nested XML and add any commands to the component hash if the command failed.  The command is converted from XML to an executable string
-# Args: XML Twig element, and the component to store command strings for
-# Returns: Nothing 
-sub process_components_command_strings {
     my ($e, $component) = @_;
     if ($component_list{$component}{'state'} =~ /(failed|error)/){
         foreach my $command_child ( $e->children('command') ) {
@@ -218,11 +196,12 @@ sub process_components_command_strings {
 				$command_string .= " 1>$stdout" if (length $stdout);
 				$command_string .= " 2>$stderr" if (length $stderr);
 
-            	push @{$component_list{$component}{'command_string'}}, $command_string;
+            	push @{$component_list{$component}{'command'}}, [$command_string, $stderr];
             }
         }
     }
 }
+
 
 # Name: report_failure_info
 # Purpose: Gather information to help diagnose a failure in the pipeline.
@@ -248,13 +227,11 @@ sub report_failure_info {
     # Get progress rate information
     my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
     my $failed_components = find_failed_components(\%component_list);
-    my $stderr_href = get_failed_stderr(\%component_list);
-	my $cmd_str_href = get_command_strings(\%component_list);
+	my $cmd_info_href = get_command_info(\%component_list);
 
     my %failure_info = ('components' => $failed_components, 
 	  'pipeline_id' => $pipeline_id,
-      'stderr_files' => $stderr_href, 
-	  'command_strings' => $cmd_str_href,
+	  'command_info' => $cmd_info_href,
       'complete_components' => $total_complete, 
       'total_components' => $total );
     return \%failure_info;
@@ -300,28 +277,17 @@ sub find_failed_components {
     return \@failed_components;
 }
 
-# Name: get_failed_stderr
-# Purpose: Compile a list of stderr files for every component in failed or error state
+# Name: get_command_info
+# Purpose: Compile a list of command_information for every component command in failed or error state
 # Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
-# Returns: Hashref listing the component and within each component key, an array of stderr files
-sub get_failed_stderr {
-    my $component_href = shift;
-    my %stderr;
-    foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
-        $stderr{$component} = $component_href->{$component}->{'stderr_files'}  if length $component_href->{$component}->{'stderr_files'};
-    }
-    return \%stderr;
-}
-
-# Name: get_command_strings
-# Purpose: Compile a list of command_strings for every component in failed or error state
-# Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
-# Returns: Hashref listing the component and within each component key, an array of command_strings
-sub get_failed_stderr {
+# Returns: Hashref listing the component and within each component key, a 2-dimensional array of command_information for each command.
+# 		   1st dimension is each failed command for the component
+# 		   2nd dimension is the failed command string and the stderr file path
+sub get_command_info {
     my $component_href = shift;
     my %cmd_str;
     foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
-        $cmd_str{$component} = $component_href->{$component}->{'command_string'}  if length $component_href->{$component}->{'command_string'};
+        $cmd_str{$component} = $component_href->{$component}->{'command'}  if (scalar @{$component_href->{$component}->{'command'}} > 0);
     }
     return \%cmd_str;
 }
