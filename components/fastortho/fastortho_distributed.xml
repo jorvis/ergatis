@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+	<commandSet type="serial">
+		<name>sam2lca compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>run FastOrtho</name>
+            <state>incomplete</state>
+            <executable>$;FASTORTHO_BIN$;/FastOrtho</executable>
+			<arg>$;OTHER_ARGS$; --option_file $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.config</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

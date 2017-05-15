@@ -74,20 +74,15 @@
                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.writeConfig.stderr</value>
             </param>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>run FastOrtho</name>
-            <state>incomplete</state>
-            <executable>$;FASTORTHO_BIN$;/FastOrtho</executable>
-			<arg>$;OTHER_ARGS$; --option_file $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.config</arg>
-            <param>  
-                <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
-            </param>
-            <param>  
-                <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
-            </param>
-        </command>
+		<!-- using distributed-serial instead of remote-serial since that will allow it to run locally if need be (like in Docker) -->
+		<commandSet type="remote-serial">
+			<state>incomplete</state>
+			<name>fastortho distributed</name>
+			<fileName>$;WORKFLOW_REPOSITORY$;/fastortho_distributed.xml.gz</fileName>
+			<dceSpec type="sge">
+				<group>$;PROJECT_CODE$;</group>
+				<OS>linux</OS>
+			</dceSpec>
+		</commandSet>
     </commandSet>
 </commandSetRoot>
