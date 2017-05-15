@@ -17,7 +17,7 @@
 			<name>get best blast hit by bitscore - "only"</name>
 			<state>incomplete</state>
 			<executable>sort</executable>
-			<arg>-k1 -k12nr -k11n $;ONLY_FILE$; | sort -u -k1 --merge</arg>
+			<arg>-k1,1 -k12,12nr -k11,11n $;ONLY_FILE$; | sort -u -k1,1 --merge</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.only.best.m8</value>
