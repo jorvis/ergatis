@@ -14,24 +14,24 @@
 		</command>
 		<command>
 			<type>RunUnixCommand</type>
-			<name>get best blast hit by bitscore - "only"</name>
+			<name>get best blast hit by bitscore - "sister"</name>
 			<state>incomplete</state>
 			<executable>sort</executable>
-			<arg>-k1,1 -k12,12nr -k11,11n $;ONLY_FILE$; | sort -u -k1,1 --merge</arg>
+			<arg>-k1,1 -k12,12nr -k11,11n $;SISTER_FILE$; | sort -u -k1,1 --merge</arg>
 			<param>
 				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.only.best.m8</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.sister.best.m8</value>
 			</param>
 		</command>
 		<command>
 			<type>RunUnixCommand</type>
-			<name>get best blast hit by bitscore - "exclude"</name>
+			<name>get best blast hit by bitscore - "outsie"</name>
 			<state>incomplete</state>
 			<executable>sort</executable>
-			<arg>-k1 -k12nr -k11n $;EXCLUDE_FILE$; | sort -u -k1 --merge</arg>
+			<arg>-k1,1 -k12,12nr -k11,11n $;OUTSIDE_FILE$; | sort -u -k1,1 --merge</arg>
 			<param>
 				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.exclude.best.m8</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.outside.best.m8</value>
 			</param>
 		</command>
 		<command>
@@ -40,12 +40,12 @@
 			<state>incomplete</state>
 			<executable>$;BIN_DIR$;/classify_class_c_genes</executable>
 			<param>
-				<key>--only_file</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.only.best.m8</value>
+				<key>--sister_file</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.sister.best.m8</value>
 			</param>
 			<param>
-				<key>--exclude_file</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.exclude.best.m8</value>
+				<key>--outside_file</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.outside.best.m8</value>
 			</param>
 			<param>
 				<key>--bitscore_thresh</key>

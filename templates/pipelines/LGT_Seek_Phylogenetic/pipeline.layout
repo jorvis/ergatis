@@ -1,33 +1,37 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
-	<commandSet type="serial">
-		<state>incomplete</state>
-		<name>start pipeline:</name>
-		<commandSet type="parallel">
-			<state>incomplete</state>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start pipeline:</name>
+        <commandSet type="parallel">
+            <state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>getorf.assembly</name>
+				</commandSet>
 				<commandSet type="parallel">
 					<state>incomplete</state>
 					<commandSet type="serial">
-					<state>incomplete</state>
+						<state>incomplete</state>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>blastn_plus.only</name>
+							<name>blastp_plus.sister</name>
 						</commandSet>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>concatenate_files.only</name>
+							<name>concatenate_files.sister</name>
 						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
 						<state>incomplete</state>
-							<commandSet type="serial">
+						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>blastn_plus.exclude</name>
+							<name>blastp_plus.outside</name>
 						</commandSet>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>concatenate_files.exclude</name>
+							<name>concatenate_files.outside</name>
 						</commandSet>
 					</commandSet>
 				</commandSet>
@@ -39,22 +43,6 @@
 					<name>filter_lgt_class_c_genes.default</name>
 				</commandSet>
 			</commandSet>
-			<commandSet type="serial">
-				<state>incomplete</state>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>getorf.assembly</name>
-				</commandSet>
-				<!-- Run FastOrtho to get orthologous groups -->
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>fastortho.taxa</name>
-				</commandSet>
-			</commandSet>
-		</commandSet>
-		<commandSet type="serial">
-			<state>incomplete</state>
-			<name>filter_lgt_class_b_genes.default</name>
-		</commandSet>
-	</commandSet>
+        </commandSet>
+    </commandSet>
 </commandSetRoot>
