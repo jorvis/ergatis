@@ -1,5 +1,7 @@
 next
 ---
+- NEW - Added fastortho component
+- NEW - Added LGT Phylogenetic pipeline
 - NEW - lgt_bwa will now use scratch as the TMP_DIR env variable instead of /tmp
 - NEW - Added code in Ergatis::Pipeline to optionally run a pipeline synchronously
 - NEW - Added Ergatis::Utils module to assist with various Ergatis diagnostics and troubleshooting
