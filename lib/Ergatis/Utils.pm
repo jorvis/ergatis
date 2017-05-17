@@ -110,7 +110,7 @@ sub process_child {
                 }
                 $component_list{$component}{'order'} = $order++;
                 $component_list{$component}{'state'} = $state;
-                $component_list{$component}{'stderr_files'} = '';
+                @{$component_list{$component}{'command'}} = ();
             }
         }
     } else {
@@ -145,7 +145,7 @@ sub process_child {
 # Purpose: Iterate through the component's nested XML and add stderr files and command strings to the component hash if the command failed
 # Args: XML Twig element, and the component to store stderr data for
 # Returns: Nothing 
-sub process_components_for_stderr {
+sub process_failed_commands {
     my ($e, $component) = @_;
     if ($component_list{$component}{'state'} =~ /(failed|error)/){
         foreach my $command_child ( $e->children('command') ) {
@@ -287,7 +287,7 @@ sub get_command_info {
     my $component_href = shift;
     my %cmd_str;
     foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
-        $cmd_str{$component} = $component_href->{$component}->{'command'}  if (scalar @{$component_href->{$component}->{'command'}} > 0);
+        $cmd_str{$component} = $component_href->{$component}->{'command'} if (scalar @{$component_href->{$component}->{'command'}} > 0);
     }
     return \%cmd_str;
 }
