@@ -144,14 +144,14 @@ sub print_class_c_genes {
 	my $h_thresh = $opts->{'hscore_thresh'};
 	open CFH, ">".$class_c_file || die("Cannot open $class_c_file for writing: $!");
 	#open AFH, ">".$all_file || die("Cannot open $all_file for writing: $!");
-	print CFH "query\tsister_hit\toutside_hit\tsister_bit\texclude_bit\th_score\n";
-	#print AFH "query\tonly_hit\texclude_hit\tonly_bit\texclude_bit\th_score\thighest_lgt_class\n";
+	print CFH "query\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\n";
+	#print AFH "query\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\thighest_lgt_class\n";
 	foreach my $hit (keys %$gene_h) {
-		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'only_subj'} . "\t" . $gene_h->{$hit}->{'exclude_subj'} . "\t" . $gene_h->{$hit}->{'only_bit'} . "\t" . $gene_h->{$hit}->{'exclude_bit'} . "\t" . $gene_h->{$hit}->{'h_score'};
-		print AFH $gene_str;
+		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'sister_subj'} . "\t" . $gene_h->{$hit}->{'outside_subj'} . "\t" . $gene_h->{$hit}->{'sister_bit'} . "\t" . $gene_h->{$hit}->{'outside_bit'} . "\t" . $gene_h->{$hit}->{'h_score'};
+		#print AFH $gene_str;
 
 		# If gene meets class C thresholds print to that file, and mark it is a class C gene in "all genes" file
-		if ($gene_h->{$hit}->{'h_score'} >= $h_thresh && $gene_h->{$hit}->{'exclude_bit'} >= $b_thresh){
+		if ($gene_h->{$hit}->{'h_score'} >= $h_thresh && $gene_h->{$hit}->{'outside_bit'} >= $b_thresh){
 			print CFH $gene_str . "\n";
 			#print AFH "\tC\n";
 		} else {
