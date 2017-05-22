@@ -54,6 +54,7 @@ umask 0000
 
 unset PERL5LIB
 unset LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/packages/gcc/lib64:$LD_LIBRARY_PATH
 
 LANG=C
 export LANG
