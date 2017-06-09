@@ -136,12 +136,8 @@
 	    <executable>/usr/bin/find</executable>
 	    <arg>$;TMP_DIR$;/parse -name "*.out" -type f -noleaf</arg>
 	    <param>
-		<key>
-		    stdout
-		</key>
-		<value>
-		    $;TMP_DIR$;/tables.out
-		</value>
+	      <key>stdout</key>
+	      <value>$;TMP_DIR$;/tables.out</value>
 	    </param>
 	</command>
 	<command>
@@ -166,12 +162,8 @@
 	    <executable>echo</executable>
 	    <arg>-e "\0044;I_TABLE_NAME\0044;" | cat - $;TMP_DIR$;/collatetables.list.tmp</arg>
 	    <param>
-		<key>
-		    stdout
-		</key>
-		<value>
-		    $;TMP_DIR$;/collatetables.list
-		</value>
+	      <key>stdout</key>
+	      <value>$;TMP_DIR$;/collatetables.list</value>
 	    </param>
 	</command>
 	<!--Iterator-->
