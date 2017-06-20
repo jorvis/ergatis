@@ -5,7 +5,7 @@ use warnings;
 use Date::Format;
 use Date::Parse;
 use XML::Twig;
-use Term::ProgressBar;
+use Module::Load;
 
 use Exporter qw(import);
 
@@ -335,6 +335,8 @@ sub create_progress_bar {
     my ($pipeline_xml, $id) = @_;
     my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
     # Create the progress bar, but also remove from terminal when finished
+	my $module = "Term::ProgressBar";
+	load $module or croak("Cannot load module $module.  Does it need to be installed with CPAN first?");
     my $p_bar = Term::ProgressBar->new ({name => "Pipeline $id",
                                          count => $total,
                                          remove => 1});
