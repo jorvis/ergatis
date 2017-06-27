@@ -1,5 +1,7 @@
 next
 ---
+- FIX - Fixed an issue with JOC pipeline where CogProteinFasta needed a map file
+			- This is only true for mugsy-comparative, so I split the two script versions and named this CogProteinFastaNoMap
 - NEW - Added fastortho component
 - NEW - Added LGT Phylogenetic pipeline
 - NEW - lgt_bwa will now use scratch as the TMP_DIR env variable instead of /tmp
