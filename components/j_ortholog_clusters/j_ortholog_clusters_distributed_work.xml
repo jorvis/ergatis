@@ -72,7 +72,7 @@
             <type>RunUnixCommand</type>
             <name>cogs2fasta</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/CogProteinFasta</executable>
+            <executable>$;BIN_DIR$;/CogProteinFastaNoMap</executable>
             <param>
                 <key>--cogFile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
