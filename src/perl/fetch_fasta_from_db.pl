@@ -1,8 +1,5 @@
-#!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+#!/usr/local/bin/perl
+
 
 use warnings;
 use strict;
@@ -20,7 +17,7 @@ my $format	= "xdformat";
 my $protein	= 0;
 my %BINS	= ( "cdbfasta"	=> "/usr/local/bin/cdbyank -w",
 		    "xdformat"	=> "/usr/local/bin/xdget",
-		    "formatdb"	=> "/usr/local/bin/fastacmd"
+		    "formatdb"	=> "/usr/local/packages/ncbi-blast/bin/fastacmd"
 		  );
 
 sub parse_options;

@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 blastbtab2bsml.pl  - convert info stored in btab files into BSML documents

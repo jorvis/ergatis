@@ -637,7 +637,7 @@ for my $feature_id ( keys %$assemblies ) {
 	    if ( $feat->primary_tag eq 'CDS' ) {
 	    # Assign start and end coordinates, but adjust if partial gene is present.  Add translation tag to the sequence
             eval {
-                my $temp_start = ($feat->start < 1) ? 1 : $feat->start;	#for partial genes extending beyond coord 1
+				my $temp_start = ($feat->start < 1) ? 1 : $feat->start;	#for partial genes extending beyond coord 1
                 my $temp_end = ($feat->end > $seq_len) ? $seq_len : $feat->end;	# for partial genes extending beyond the end
                 my $subseq = $whole_seq->trunc($temp_start, $temp_end);	#get specific sequence from this region
                 $subseq = $subseq->revcom if ($feat->strand eq "-1");	#get compliments of sequences that need them
@@ -653,8 +653,12 @@ for my $feature_id ( keys %$assemblies ) {
                             $trans_table = ($feat->get_tag_values('transl_table'))[0];
                         }
                     }
-                    $feat->add_tag_value( 'translation', $subseq->translate(-complete => 1, -codontable_id => $trans_table)->seq );
-                }
+					#if ($feat->start < 1) {
+					#	$feat->add_tag_value( 'translation', $subseq->translate(-orf => 1, -complete => 1, -codontable_id => $trans_table)->seq );
+					#} else {
+                    	$feat->add_tag_value( 'translation', $subseq->translate(-complete => 1, -codontable_id => $trans_table)->seq );
+					#}
+				}
             };
 
             if ($@) {
@@ -737,11 +741,7 @@ for my $feature_id ( keys %$assemblies ) {
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
             # is this a partial?
             if ($feat->start <= 0) {
-				if ($feat->strand == 1) {
-            		$feat->location->start("<1");
-				} else {
-					$feat->location->start("1<");
-				}
+				$feat->location->start("<1");
 			}
 
 			if ($feat->end > $assembly_length) {
