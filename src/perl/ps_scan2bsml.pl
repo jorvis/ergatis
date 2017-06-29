@@ -215,6 +215,8 @@ sub generateBsml {
                                 'compcomplement' => 0,
                                 );   
 
+				# SADKINS - 6/29/17 - for some reason some match parts had refpos at -1 with all other values at 0.  Skip these.
+				next if $sprArgs{'refpos'} == -1;
                 my $sprObj = $doc->createAndAddSequencePairRun(%sprArgs);
                 $doc->createAndAddBsmlAttribute($sprObj, 'class', 'match_part');
             }
