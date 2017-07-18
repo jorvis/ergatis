@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>alien_hunter</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/alien_hunter</executable>
+            <executable>$;ALIEN_HUNTER_EXEC$;</executable>
 			<arg>$;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.out</arg>
 			<param>
 				<key>stdout</key>

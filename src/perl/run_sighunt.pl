@@ -82,7 +82,7 @@ my $input_r = "$output_path/$r_filename"."in";
 open (OUT, ">$input_r");
 while (<IN>) {
     s/###input_file###/$input_file/;
-    s/###output_path###/$output_path\//;
+    s/###output_path###/$output_path/;
     print OUT;
 }
 close OUT;
