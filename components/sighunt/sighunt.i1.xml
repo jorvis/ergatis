@@ -24,6 +24,10 @@
 		        <key>--r_exec_path</key>
 		        <value>$;R_EXEC$;</value>
 	        </param>
+	        <param>
+		        <key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+	        </param>
         </command>
     </commandSet>
 </commandSetRoot>
