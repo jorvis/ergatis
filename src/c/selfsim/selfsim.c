@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   while((Ch = fgetc(GENOME_FILE)) != EOF) {
     if  (Ch == '\n' || Ch == ' ' || Ch == '\t')
       continue;
-    Ch = tolower (Ch);
+    Ch = tolower(Ch);
     switch  (Ch)  {
       case  'a' : Base = 0;
 	break;
