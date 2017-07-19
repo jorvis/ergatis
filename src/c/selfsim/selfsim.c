@@ -15,10 +15,7 @@
 
 FILE *GENOME_FILE;
 
-main(argc, argv)
-int argc;
-char *argv[];
-{
+int main(int argc, char *argv[]) {
   char one_line[120];
   static char genome[28000000];   /* max genome size is 8 Mbases */
   char Ch;
