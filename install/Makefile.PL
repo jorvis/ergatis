@@ -185,8 +185,8 @@ c_apps	:
 	@install $(C_BUILD_DIR)/pangenome_profile_compare/pangenome_profile_compare $(PREFIX)/bin
 	${MAKE} -C $(C_BUILD_DIR)/SnpClusterer
 	@install $(C_BUILD_DIR)/SnpClusterer/SnpClusterer $(PREFIX)/bin
-	#${MAKE} -C $(C_BUILD_DIR)/selfsim
-	#@install $(C_BUILD_DIR)/selfsim/selfsim $(PREFIX)/bin
+	${MAKE} -C $(C_BUILD_DIR)/selfsim
+	@install $(C_BUILD_DIR)/selfsim/selfsim $(PREFIX)/bin
 
 r_scripts:
 	@echo "Installing R scripts to $(PREFIX)/bin"

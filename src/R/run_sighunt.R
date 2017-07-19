@@ -25,4 +25,5 @@ get_candidates <- function(sequence){
 # NOTE about input - Sequence must be > 5000 bases
 myseq <- read_fasta('###input_file###')
 list_of_candidates <- lapply(myseq, get_candidates)
-write(list_of_candidates, file = '###output_path###/candidates.txt')
+#lapply(list_of_candidates, write, file='###output_path###/candidates.txt', append=TRUE, ncolumns=1000)
+lapply(list_of_candidates, cat, "\n", file='###output_path###/candidates.txt', append=TRUE)
