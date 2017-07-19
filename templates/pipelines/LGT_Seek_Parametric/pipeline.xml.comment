@@ -1,1 +1,1 @@
-A pipeline that is designed to assemble a set of reads, then run LGT parametric analyses on the resulting assemblies
+A pipeline that is designed to run LGT parametric analyses on a genome to find atypical regions suggestive of alien DNA

@@ -4,10 +4,6 @@
         <name>start pipeline:</name>
         <commandSet type="serial">
             <state>incomplete</state>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>SPAdes.assembly</name>
-            </commandSet>
             <commandSet type="parallel">
                 <state>incomplete</state>
             	<commandSet type="serial">
@@ -17,6 +13,10 @@
             	<commandSet type="serial">
                 	<state>incomplete</state>
                 	<name>sighunt.default</name>
+            	</commandSet>
+            	<commandSet type="serial">
+                	<state>incomplete</state>
+                	<name>alien_hunter.default</name>
             	</commandSet>
             </commandSet>
         </commandSet>

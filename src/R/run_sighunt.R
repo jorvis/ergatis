@@ -8,7 +8,7 @@
 # Load the SigHunt library
 library(sighunt)
 
-cutoff <- 8
+cutoff <- ###cutoff###
 
 # function that executes my analysis on one sequence
 # NOTE: code copied from https://github.com/KamilSJaron/sighunt/blob/master/README.md
@@ -25,5 +25,7 @@ get_candidates <- function(sequence){
 # NOTE about input - Sequence must be > 5000 bases
 myseq <- read_fasta('###input_file###')
 list_of_candidates <- lapply(myseq, get_candidates)
-#lapply(list_of_candidates, write, file='###output_path###/candidates.txt', append=TRUE, ncolumns=1000)
-lapply(list_of_candidates, cat, "\n", file='###output_path###/candidates.txt', append=TRUE)
+pretty_list <- sapply(list_of_candidates, rep)
+sink('###output_path###/candidates.txt')
+print(pretty_list)
+sink()

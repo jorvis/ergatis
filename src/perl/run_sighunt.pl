@@ -19,6 +19,9 @@ run_sighunt.pl - Run the SigHunt R package using the assembly input
 B<--input_file,-i>
 	Path to an assembly fasta file
 
+B<--cutoff, -c>
+    DIAS value to exceed when filtering interval regions
+
 B<--r_script,-r>
     The R script to run on the input pangenome_table
 
@@ -51,15 +54,16 @@ use Pod::Usage;
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
+my $CUTOFF = 8;
+
 my %options = ();
 my $results = GetOptions( \%options,
                           'input_file|i=s',
+						  'cutoff|c=i',
                           'r_script|r=s',
 			              'r_exec_path|p=s',
                           'output_path|o=s',
                           'help|h') || pod2usage();
-
-
 
 pod2usage if $options{'help'};
 
@@ -68,6 +72,7 @@ my $input_file = $options{'input_file'};
 my $r_script = $options{'r_script'};
 my $output_path = $options{'output_path'};
 my $R_EXEC_PATH = $options{'r_exec_path'};
+my $cutoff = defined $options{'cutoff'} ? $options{'cutoff'} : $CUTOFF;
 
 # Just keep basename for R script template
 my $r_filename = $r_script;
@@ -81,6 +86,7 @@ my $input_r = "$output_path/$r_filename"."in";
 # In the R-script template, customize for current job by subbing certain fields
 open (OUT, ">$input_r");
 while (<IN>) {
+	s/###cutoff###/$cutoff/;
     s/###input_file###/$input_file/;
     s/###output_path###/$output_path/;
     print OUT;
