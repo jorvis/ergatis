@@ -8,7 +8,7 @@
             <name>alien_hunter</name>
             <state>incomplete</state>
             <executable>$;ALIEN_HUNTER_EXEC$;</executable>
-			<arg>$;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.out</arg>
+			<arg>$;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.out -c</arg>
 			<param>
 				<key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
