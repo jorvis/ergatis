@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>Remove subset of GIs workflow</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>fetch GIs of taxon ID</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/fetch_gis_from_taxon_id</executable>
+            <param>  
+                <key>--database</key>
+                <value>$;DATABASE$;</value>
+            </param>
+            <param>  
+                <key>--taxon_id</key>
+                <value>$;TAXON_ID$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort large GI list</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+            <arg>-n $;INPUT_FILE$;</arg>
+			<param>
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/sorted_superset.gilist</value>
+			</param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort small GI list</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+			<arg>-n $;OUTPUT_DIRECTORY$;/$;TAXON_ID$;.gilist</arg>
+			<param>
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/sorted_subset.gilist</value>
+			</param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Suppress subset of GI</name>
+            <state>incomplete</state>
+            <executable>comm</executable>
+			<arg>-2 -3 $;OUTPUT_DIRECTORY$;/sorted_superset.gilist $;OUTPUT_DIRECTORY$;/sorted_subset.gilist</arg>
+			<param>
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/gis_without_$;TAXON_ID$;.gilist</value>
+			</param>
+        </command>
+    </commandSet>
+</commandSetRoot>
