@@ -13,7 +13,7 @@ cutoff <- ###cutoff###
 # function that executes my analysis on one sequence
 # NOTE: code copied from https://github.com/KamilSJaron/sighunt/blob/master/README.md
 get_candidates <- function(sequence){
-	signature <- get_signature(sequence, window=5000, step=1000)
+	signature <- get_signature(sequence, window=###window_size###, step=###shift###)
 # can choose from global_density, sliding_density or eye_of_storm
 	dias <- global_density(signature)
 	candidates <- dias[dias > cutoff]

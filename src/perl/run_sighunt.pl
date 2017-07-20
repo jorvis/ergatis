@@ -20,10 +20,16 @@ B<--input_file,-i>
 	Path to an assembly fasta file
 
 B<--cutoff, -c>
-    DIAS value to exceed when filtering interval regions
+    DIAS value to exceed when filtering interval regions. Default 8
+
+B<--window_size, -w>
+    Number of bases to examine at a time. Default 5000
+
+B<--shift, -s>
+    Number of bases to shift the sliding window.  Default 1000
 
 B<--r_script,-r>
-    The R script to run on the input pangenome_table
+    The path of the 'run_sighunt.R' template file
 
 B<--output_path,-o>
     Path to which output files will be written.
@@ -55,11 +61,15 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 my $CUTOFF = 8;
+my $WINDOW_SIZE = 5000;
+my $SHIFT = 1000;
 
 my %options = ();
 my $results = GetOptions( \%options,
                           'input_file|i=s',
 						  'cutoff|c=i',
+						  'window_size|w=i',
+						  'shift|s=i',
                           'r_script|r=s',
 			              'r_exec_path|p=s',
                           'output_path|o=s',
@@ -73,6 +83,8 @@ my $r_script = $options{'r_script'};
 my $output_path = $options{'output_path'};
 my $R_EXEC_PATH = $options{'r_exec_path'};
 my $cutoff = defined $options{'cutoff'} ? $options{'cutoff'} : $CUTOFF;
+my $window_size = defined $options{'window_size'} ? $options{'window_size'} : $WINDOW_SIZE;
+my $shift = defined $options{'shift'} ? $options{'shift'} : $SHIFT;
 
 # Just keep basename for R script template
 my $r_filename = $r_script;
@@ -87,6 +99,8 @@ my $input_r = "$output_path/$r_filename"."in";
 open (OUT, ">$input_r");
 while (<IN>) {
 	s/###cutoff###/$cutoff/;
+	s/###window_size###/$window_size/;
+	s/###shift###/$shift/;
     s/###input_file###/$input_file/;
     s/###output_path###/$output_path/;
     print OUT;

@@ -17,6 +17,14 @@
                 <value>$;CUTOFF$;</value>
             </param>
             <param>  
+                <key>--window_size</key>
+                <value>$;WINDOW_SIZE$;</value>
+            </param>
+            <param>  
+                <key>--shift</key>
+                <value>$;SHIFT$;</value>
+            </param>
+            <param>  
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
