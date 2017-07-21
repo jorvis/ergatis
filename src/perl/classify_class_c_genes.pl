@@ -108,6 +108,8 @@ sub parse_m8 {
 		my @hit = split(/\t/);
 		$gene_h->{$hit[0]}->{'sister_subj'} = $hit[1];
 		$gene_h->{$hit[0]}->{'sister_bit'} = $hit[11];
+		$gene_h->{$hit[0]}->{'q_start'} = $hit[6];
+		$gene_h->{$hit[0]}->{'q_end'} = $hit[7];
 	}
 	close SISTER;
 	open OUTSIDE, $exclude_f || die("Cannot open $exclude_f for reading: $!");
@@ -144,10 +146,10 @@ sub print_class_c_genes {
 	my $h_thresh = $opts->{'hscore_thresh'};
 	open CFH, ">".$class_c_file || die("Cannot open $class_c_file for writing: $!");
 	#open AFH, ">".$all_file || die("Cannot open $all_file for writing: $!");
-	print CFH "query\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\n";
-	#print AFH "query\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\thighest_lgt_class\n";
+	print CFH "query\tq_start\tq_end\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\n";
+	#print AFH "query\tq_start\tq_end\tsister_hit\toutside_hit\tsister_bit\toutside_bit\th_score\thighest_lgt_class\n";
 	foreach my $hit (keys %$gene_h) {
-		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'sister_subj'} . "\t" . $gene_h->{$hit}->{'outside_subj'} . "\t" . $gene_h->{$hit}->{'sister_bit'} . "\t" . $gene_h->{$hit}->{'outside_bit'} . "\t" . $gene_h->{$hit}->{'h_score'};
+		my $gene_str = "$hit\t" . $gene_h->{$hit}->{'q_start'} . "\t" . $gene_h->{$hit}->{'q_end'} . "\t" . $gene_h->{$hit}->{'sister_subj'} . "\t" . $gene_h->{$hit}->{'outside_subj'} . "\t" . $gene_h->{$hit}->{'sister_bit'} . "\t" . $gene_h->{$hit}->{'outside_bit'} . "\t" . $gene_h->{$hit}->{'h_score'};
 		#print AFH $gene_str;
 
 		# If gene meets class C thresholds print to that file, and mark it is a class C gene in "all genes" file
