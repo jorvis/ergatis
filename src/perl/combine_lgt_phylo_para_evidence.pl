@@ -103,12 +103,13 @@ sub main {
 
 	# If the parametric output file was passed in, parse the file
 	parse_alien_hunter_data($options{'alien_hunter_file'}, $genes) if defined $options{'alien_hunter_file'};
-	parse_selfsim_data($options{'selfsim_file'}, $selfsim_cutoff, $sliding_window_size, $genes) if defined $options{'selfsim_file'};
+	parse_selfsim_data($options{'selfsim_file'}, $selfsim_cutoff, $window_size, $genes) if defined $options{'selfsim_file'};
 	parse_sighunt_data($options{'sighunt_file'}, $genes) if defined $options{'sighunt_file'};
 
-	my $outfh
-	open $outfh, ">".$options{'output_file'} or &_log($ERROR, "Cannot open " .$options{'output_file'}. " for writing: $!")
+	my $outfh;
+	open $outfh, ">".$options{'output_file'} or &_log($ERROR, "Cannot open " .$options{'output_file'}. " for writing: $!");
 	close $outfh;
+	write_output($outfh, $genes);
 }
 
 sub parse_class_c_genes {
@@ -131,6 +132,19 @@ sub parse_class_c_genes {
 sub parse_alien_hunter_file {
 	my $file = shift;
 	my $genes_h = shift;
+	open IN, $file or &_log($ERROR, "Cannot open $file for reading: $!");
+	while (<IN>) {
+		chomp;
+		if ($_ =~ /misc_feature\s+(\d+)\.\.(\d+)$/) {
+			my $window_start = $1;
+			my $window_end = $2;
+			foreach my $gene (keys %$genes_h) {
+				# Make flag if window completely envelopes gene boundaries
+				$genes_h->{$gene}->{'selfsim'} = 1 if ( $window_start <= $genes_h->{$gene}->{'start'} && $genes_h->{$gene}->{'end'} <= $window_end );
+			}
+		}
+	}
+	close IN
 
 }
 
@@ -148,7 +162,7 @@ sub parse_selfsim_data {
 		next if ($_ =~ /^#/);
 		my @fields = split;
 		# Only study those where the chi-sq value is less than the cutoff
-		if (@fields[1] >= $cutoff) {
+		if ($fields[1] >= $cutoff) {
 			my $window_start = $fields[0] - $pos_to_shift + 1; # want to start at position 1
 			my $window_end = $fields[0] + $pos_to_shift;
 			foreach my $gene (keys %$genes_h) {
@@ -160,16 +174,40 @@ sub parse_selfsim_data {
 	close IN;
 }
 
+# NOTE: Sighunt windows that did not meet the cutoff were filtered out in the R script output
 sub parse_sighunt_data {
 	my $file = shift;
 	my $genes_h = shift;
 
 	open IN, $file or &_log($ERROR, "Cannot open $file for reading: $!");
+	my $line = <IN>; # Skip first line, which is the genome name
 	while (<IN>) {
 		chomp;
 		my @fields = split;
+		my @window = split ('-',$fields[0]);
+		my $window_start = $window[0];
+		my $window_end = $window[1];
+		foreach my $gene (keys %$genes_h) {
+			# Make flag if window completely envelopes gene boundaries
+			$genes_h->{$gene}->{'selfsim'} = 1 if ( $window_start <= $genes_h->{$gene}->{'start'} && $genes_h->{$gene}->{'end'} <= $window_end );
+		}
 	}
 	close IN;
+}
+
+sub write_output {
+	my $outfh = shift;
+	my $genes_h = shift;
+
+	print $outfh "Gene\tAlienHunter\tSelfsim\tSighunt\n";
+	
+	foreach my $gene (keys %$genes_h) {
+		print $outfh "$gene\t";
+
+		print $outfh (defined $genes_h->{$gene}->{'alien_hunter'}) ? "*\t" : "\t";
+		print $outfh (defined $genes_h->{$gene}->{'selfsim'}) ? "*\t" : "\t";
+		print $outfh (defined $genes_h->{$gene}->{'sighunt'}) ? "*\n" : "\n";
+	}
 }
 
 sub check_options {
