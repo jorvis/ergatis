@@ -12,11 +12,14 @@
 #########################################################################################
 
 use strict;
+
 # Extended processing of command line options
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
-# Include packages here 
+
+# Include packages here
 use LWP::UserAgent;
 use Data::Dumper;
 
@@ -25,45 +28,46 @@ use Data::Dumper;
 #############
 
 # This is the URI link to pass params to in order to generate a .sbt file
-my $SUBMISSION_TEMPLATE = 'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
+my $SUBMISSION_TEMPLATE =
+  'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
 
 ###########
 # GLOBALS #
 ###########
 my %hCmdLineArgs = ();
+
 # Log file handle;
 my $logfh;
-my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
+my ( $ERROR, $WARN, $DEBUG ) = ( 1, 2, 3 );
 my @aMeta = ();
+
 # This is the form data to be sent as POST
 my %post_data = ();
 
 ################
 # MAIN PROGRAM #
 ################
-GetOptions(\%hCmdLineArgs,
-	   'input_file|i=s',
-	   'output_dir|o=s',
-	   'log|l=s', 
-	   'help|h'
-	  ) or pod2usage();
+GetOptions( \%hCmdLineArgs, 'input_file|i=s', 'output_dir|o=s', 'log|l=s',
+    'help|h' )
+  or pod2usage();
 
-pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineArgs{'help'});
+pod2usage( { -exitval => 0, -verbose => 2, -output => \*STDERR } )
+  if ( $hCmdLineArgs{'help'} );
 
-checkCmdLineArgs(\%hCmdLineArgs);
+checkCmdLineArgs( \%hCmdLineArgs );
 
-readInput($hCmdLineArgs{'input_file'}, \@aMeta);
+readInput( $hCmdLineArgs{'input_file'}, \@aMeta );
 
-prepareSbt(\@aMeta, $hCmdLineArgs{'output_dir'});
+prepareSbt( \@aMeta, $hCmdLineArgs{'output_dir'} );
 
-prepareCmt(\@aMeta, $hCmdLineArgs{'output_dir'});
+prepareCmt( \@aMeta, $hCmdLineArgs{'output_dir'} );
 
 ###############
 # SUBROUTINES #
 ###############
 
 ####################################################################################################################################################
-# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id  
+# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id
 # Parameters    : sRunId
 #		  sRunId - SRA compatible experiment id or run id or sample id or study id for the read files to be downloaded
 # Returns       : sFile
@@ -71,124 +75,145 @@ prepareCmt(\@aMeta, $hCmdLineArgs{'output_dir'});
 # Modifications :
 
 sub prepareSbt {
-	my ($metadata, $sOutDir) = @_;
-	my $sSubName = (caller(0))[3];
-	my $nI;
-	my ($sCmd, $sSbtFile);
-	my $fhRead;
+    my ( $metadata, $sOutDir ) = @_;
+    my $sSubName = ( caller(0) )[3];
+    my $nI;
+    my ( $sCmd, $sSbtFile );
+    my $fhRead;
 
-	$sSbtFile = $sOutDir."/".$metadata->[0].".sbt";
-# Authors section
-	my @aAuthors = ();
-	my ($sLast, $sFirst, $sMiddle, $sAuthorForm) = "";
-	@aAuthors = split(/\,/, $metadata->[16]);	
-	for($nI=0; $nI < @aAuthors; $nI++) {
-		$sLast = "";
-		$sFirst = "";
-		$aAuthors[$nI] =~ s/^\s+|\s+$//;
-		($sLast, $sFirst, $sMiddle) = split(/\s+/, $aAuthors[$nI], 3);
-		if(!defined($sMiddle)) {
-			$sMiddle = "";
-		} 	
-		$sLast =~ s/^\s+|\s+$//;
-		$sFirst =~ s/^\s+|\s+$//;
-		$sMiddle =~ s/^\s+|\s+$// if(length($sMiddle) > 0);
+    $sSbtFile = $sOutDir . "/" . $metadata->[0] . ".sbt";
 
-		$post_data{"sequence_author-$nI-first_name"}=$sFirst;
-		$post_data{"sequence_author-$nI-middle_initial"}=$sMiddle;
-		$post_data{"sequence_author-$nI-last_name"}=$sLast;
-		$post_data{"sequence_author-$nI-suffix"}='';
-	}
+    # Authors section
+    my @aAuthors = ();
+    my ( $sLast, $sFirst, $sMiddle, $sAuthorForm ) = "";
+    @aAuthors = split( /\,/, $metadata->[16] );
+    for ( $nI = 0; $nI < @aAuthors; $nI++ ) {
+        $sLast  = "";
+        $sFirst = "";
+        $aAuthors[$nI] =~ s/^\s+|\s+$//;
+        ( $sLast, $sFirst, $sMiddle ) = split( /\s+/, $aAuthors[$nI], 3 );
+        if ( !defined($sMiddle) ) {
+            $sMiddle = "";
+        }
+        $sLast =~ s/^\s+|\s+$//;
+        $sFirst =~ s/^\s+|\s+$//;
+        $sMiddle =~ s/^\s+|\s+$// if ( length($sMiddle) > 0 );
 
-# Contact information section
-	my ($sCLast, $sCFirst);
-	($sCLast, $sCFirst) = split(/\s+/, $metadata->[14], 2);
-	
-	if (!$sCLast || !$sCFirst || !$metadata->[15]) {
-		printLogMsg($ERROR, "Author name (last, first) and author e-mail are required in metadata file: $!");
-	}
+        $post_data{"sequence_author-$nI-first_name"}     = $sFirst;
+        $post_data{"sequence_author-$nI-middle_initial"} = $sMiddle;
+        $post_data{"sequence_author-$nI-last_name"}      = $sLast;
+        $post_data{"sequence_author-$nI-suffix"}         = '';
+    }
 
-	# Initializing hash of contact infomation with default values if user-provided information is not present
-	my %contact_info;
-	if (! $metadata->[20] || ! -e $metadata->[20]) {
-		%contact_info = (
-		'city' => 'Baltimore',
-		'country' => 'USA',
-		'department' => 'Institute for Genome Sciences',
-		'fax' => 'none',
-		'institution' => 'University of Maryland School of Medicine',
-		'phone' => '410-706-1401',
-		'sub' => 'MD',
-		'street' => 'BioPark II, 801 W. Baltimore St., Suite 619',
-		'postal_code' => '21201'
-		);
-	} else {
-		# Open the file of contacts, parse the entry for the author we need and write to hash
-		open(CONTACT, $metadata->[20]) || printLogMsg($ERROR, "Could not open file $metadata->[20] for reading: $!");
-		while (<CONTACT>) {
-			chomp;
-			next unless (/^$metadata->[14]/);
-			my @fields = split(/\t/);
-			for (my $f=0; $f <=$#fields; $f++){
-				# give any undefined fields a 'none' value
-				$fields[$f] = 'none' if (! $fields[$f]);
-			}
-			# Populate the contact hash by iterating through the fields array
-			my $field_index = 1;
-			foreach my $field qw(institution department city sub country street fax phone postal_code) {
-				$contact_info{$field} = $fields[$field_index++];
-			}
-			foreach my $required qw(institution department street city country postal_code) {
-				printLogMsg($ERROR, "Field [$required] is required to have information in the contacts file: $!") if $contact_info{$required} eq 'none'; 
-			}
-			last;
-		}
-		close CONTACT;
-	}
+    # Contact information section
+    my ( $sCLast, $sCFirst );
+    ( $sCLast, $sCFirst ) = split( /\s+/, $metadata->[14], 2 );
 
-	# copy contact info over to post data hash
-	foreach my $c (keys %contact_info){
-		$post_data{$c} = $contact_info{$c};
-	}
+    if ( !$sCLast || !$sCFirst || !$metadata->[15] ) {
+        printLogMsg( $ERROR,
+            "Author name (last, first) and author e-mail are required in metadata file: $!"
+        );
+    }
 
-    $post_data{'first_name'} = $sCFirst;
-	$post_data{'last_name'} = $sCLast;
-	$post_data{'email'} = $metadata->[15];
-	$post_data{'publication_status'} = 'unpublished';
-	$post_data{'reference_title'} = $metadata->[17];
-	$post_data{'same_reference_and_sequence_authors'} = 'yes';
-	$post_data{'bioproject_id'} = $metadata->[4];
-	$post_data{'biosample_id'} = $metadata->[21];
-	# Hidden form values
-	$post_data{'sequence_author-TOTAL_FORMS'} = scalar(@aAuthors);
-	$post_data{'sequence_author-INITIAL_FORMS'} = '0';
-	$post_data{'sequence_author-MAX_NUM_FORMS'} = '1000';
-	$post_data{'reference_author-TOTAL_FORMS'} = '1';
-	$post_data{'reference_author-INITIAL_FORMS'} = '0';
-	$post_data{'reference_author-MAX_NUM_FORMS'} = '1000';
+# Initializing hash of contact infomation with default values if user-provided information is not present
+    my %contact_info;
+    if ( !$metadata->[20] || !-e $metadata->[20] ) {
+        %contact_info = (
+            'city'        => 'Baltimore',
+            'country'     => 'USA',
+            'department'  => 'Institute for Genome Sciences',
+            'fax'         => 'none',
+            'institution' => 'University of Maryland School of Medicine',
+            'phone'       => '410-706-1401',
+            'sub'         => 'MD',
+            'street'      => 'BioPark II, 801 W. Baltimore St., Suite 619',
+            'postal_code' => '21201'
+        );
+    } else {
 
-	printLogMsg($DEBUG, "INFO : Preparing to send POST data to $SUBMISSION_TEMPLATE");
-	my $response = send_request($SUBMISSION_TEMPLATE, \%post_data);
-	printLogMsg($DEBUG, "INFO : Now writing HTTP POST response to $sSbtFile");
-	open( SBT_OUT, ">$sSbtFile") or printLogMsg($ERROR, "Could not open file $sSbtFile for writing. Reason : $!");
-	print SBT_OUT $response;
-	close SBT_OUT;
+# Open the file of contacts, parse the entry for the author we need and write to hash
+        open( CONTACT, $metadata->[20] )
+          || printLogMsg( $ERROR,
+            "Could not open file $metadata->[20] for reading: $!" );
+        while (<CONTACT>) {
+            chomp;
+            next unless (/^$metadata->[14]/);
+            my @fields = split(/\t/);
+            for ( my $f = 0; $f <= $#fields; $f++ ) {
 
+                # give any undefined fields a 'none' value
+                $fields[$f] = 'none' if ( !$fields[$f] );
+            }
 
-	if(-e $sSbtFile) {
-		open($fhRead, "< $sSbtFile") or printLogMsg($ERROR, "Could not open file $sSbtFile for reading. Reason : $!");
-		while(<$fhRead>) {
-			chomp($_);
-			if($_ =~ /^Submit-block/) {
-				printLogMsg($DEBUG, "INFO : $sSbtFile file created successfully");
-			} else {
-				printLogMsg($ERROR, "ERROR : $sSbtFile file was created errorneously.");
-			}
-			last;
-		}	
-		} else {
-		printLogMsg($ERROR, "ERROR : $sSbtFile file creation failed. Reason : $?");
-	}
+            # Populate the contact hash by iterating through the fields array
+            my $field_index = 1;
+			my @contact_fields = qw(institution department city sub country street fax phone postal_code);
+            foreach my $field (@contact_fields) {
+                $contact_info{$field} = $fields[ $field_index++ ];
+            }
+
+			my @req_fields = qw(institution department street city country postal_code);
+            foreach my $required (@req_fields) {
+                printLogMsg( $ERROR,
+                    "Field [$required] is required to have information in the contacts file: $!"
+                ) if $contact_info{$required} eq 'none';
+            }
+            last;
+        }
+        close CONTACT;
+    }
+
+    # copy contact info over to post data hash
+    foreach my $c ( keys %contact_info ) {
+        $post_data{$c} = $contact_info{$c};
+    }
+
+    $post_data{'first_name'}                          = $sCFirst;
+    $post_data{'last_name'}                           = $sCLast;
+    $post_data{'email'}                               = $metadata->[15];
+    $post_data{'publication_status'}                  = 'unpublished';
+    $post_data{'reference_title'}                     = $metadata->[17];
+    $post_data{'same_reference_and_sequence_authors'} = 'yes';
+    $post_data{'bioproject_id'}                       = $metadata->[4];
+    $post_data{'biosample_id'}                        = $metadata->[21];
+
+    # Hidden form values
+    $post_data{'sequence_author-TOTAL_FORMS'}    = scalar(@aAuthors);
+    $post_data{'sequence_author-INITIAL_FORMS'}  = '0';
+    $post_data{'sequence_author-MAX_NUM_FORMS'}  = '1000';
+    $post_data{'reference_author-TOTAL_FORMS'}   = '1';
+    $post_data{'reference_author-INITIAL_FORMS'} = '0';
+    $post_data{'reference_author-MAX_NUM_FORMS'} = '1000';
+
+    printLogMsg( $DEBUG,
+        "INFO : Preparing to send POST data to $SUBMISSION_TEMPLATE" );
+    my $response = send_request( $SUBMISSION_TEMPLATE, \%post_data );
+    printLogMsg( $DEBUG, "INFO : Now writing HTTP POST response to $sSbtFile" );
+    open( SBT_OUT, ">$sSbtFile" )
+      or printLogMsg( $ERROR,
+        "Could not open file $sSbtFile for writing. Reason : $!" );
+    print SBT_OUT $response;
+    close SBT_OUT;
+
+    if ( -e $sSbtFile ) {
+        open( $fhRead, "< $sSbtFile" )
+          or printLogMsg( $ERROR,
+            "Could not open file $sSbtFile for reading. Reason : $!" );
+        while (<$fhRead>) {
+            chomp($_);
+            if ( $_ =~ /^Submit-block/ ) {
+                printLogMsg( $DEBUG,
+                    "INFO : $sSbtFile file created successfully" );
+            } else {
+                printLogMsg( $ERROR,
+                    "ERROR : $sSbtFile file was created errorneously." );
+            }
+            last;
+        }
+    } else {
+        printLogMsg( $ERROR,
+            "ERROR : $sSbtFile file creation failed. Reason : $?" );
+    }
 }
 
 ###
@@ -196,20 +221,22 @@ sub prepareSbt {
 ###
 #
 sub send_request {
-    my ($url, $post) = @_;
+    my ( $url, $post ) = @_;
     my $ua = LWP::UserAgent->new;
-	my $res = $ua->post( $url, Content => $post );
-	#print Dumper($post); die;
-    if (! $res->is_success) {
-		#print "POST", "\t", $res->status_line . "\n";
-		die $res->content, "\n";
+    my $res = $ua->post( $url, Content => $post );
+
+    #print Dumper($post); die;
+    if ( !$res->is_success ) {
+
+        #print "POST", "\t", $res->status_line . "\n";
+        die $res->content, "\n";
     }
     return $res->content;
 
 }
 
 ####################################################################################################################################################
-# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id  
+# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id
 # Parameters    : sRunId
 #		  sRunId - SRA compatible experiment id or run id or sample id or study id for the read files to be downloaded
 # Returns       : sFile
@@ -217,30 +244,33 @@ sub send_request {
 # Modifications :
 
 sub createDbDir {
-	my ($sOutDir, $sDb) = @_;
-	my $sSubName = (caller(0))[3];
-	my $sDbDir;
+    my ( $sOutDir, $sDb ) = @_;
+    my $sSubName = ( caller(0) )[3];
+    my $sDbDir;
 
-	$sDbDir = $sOutDir."/".$sDb;
-	if((-e $sDbDir) && (-d $sDbDir)) {
-		return(1);
-	} else {
-		if((-e $sOutDir) && (-d $sOutDir)) {
-			if(mkdir $sDbDir) {
-				return(1);
-			} else {
-				printLogMsg($ERROR, "ERROR : $sSubName :: Unable to create database specific directory within output directory $sOutDir. Reason : $!");
-			}
-			
-		} else {
-			printLogMsg($ERROR, "ERROR : $sSubName :: Provided output directory $sOutDir does not exist.");
-		}
-	}
+    $sDbDir = $sOutDir . "/" . $sDb;
+    if ( ( -e $sDbDir ) && ( -d $sDbDir ) ) {
+        return (1);
+    } else {
+        if ( ( -e $sOutDir ) && ( -d $sOutDir ) ) {
+            if ( mkdir $sDbDir ) {
+                return (1);
+            } else {
+                printLogMsg( $ERROR,
+                    "ERROR : $sSubName :: Unable to create database specific directory within output directory $sOutDir. Reason : $!"
+                );
+            }
+
+        } else {
+            printLogMsg( $ERROR,
+                "ERROR : $sSubName :: Provided output directory $sOutDir does not exist."
+            );
+        }
+    }
 }
 
-
 ####################################################################################################################################################
-# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id  
+# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id
 # Parameters    : sRunId
 #		  sRunId - SRA compatible experiment id or run id or sample id or study id for the read files to be downloaded
 # Returns       : sFile
@@ -248,50 +278,55 @@ sub createDbDir {
 # Modifications :
 
 sub prepareCmt {
-	my ($metadata, $sOutDir) = @_;
-	my $sSubName = (caller(0))[3];
-	my $sCmtFile;
-	my $fhWrite;
+    my ( $metadata, $sOutDir ) = @_;
+    my $sSubName = ( caller(0) )[3];
+    my $sCmtFile;
+    my $fhWrite;
 
-	$sCmtFile = $sOutDir."/".$metadata->[0].".cmt";
-	open($fhWrite, "> $sCmtFile") or printLogMsg($ERROR, "Could not open file $sCmtFile for writing. Reason : $!");
-	
-	print $fhWrite "StructuredCommentPrefix\t##Genome-Assembly-Data-START##\n";
-	print $fhWrite "Assembly Method\t$metadata->[11]\n";
-	print $fhWrite "Genome Coverage\t$metadata->[12]\n";
-	print $fhWrite "Sequencing Technology\t$metadata->[13]\n";
-	print $fhWrite "StructuredCommentSuffix\t##Genome-Assembly-Data-END##";
-	close($fhWrite);
+    $sCmtFile = $sOutDir . "/" . $metadata->[0] . ".cmt";
+    open( $fhWrite, "> $sCmtFile" )
+      or printLogMsg( $ERROR,
+        "Could not open file $sCmtFile for writing. Reason : $!" );
 
-	if((-e $sCmtFile) && (-s $sCmtFile)) {
-		printLogMsg($DEBUG, "INFO : $sCmtFile file created successfully");
-	} else {
-		printLogMsg($ERROR, "ERROR : $sCmtFile file creation failed. Reason : $?");
-	}
+    print $fhWrite "StructuredCommentPrefix\t##Genome-Assembly-Data-START##\n";
+    print $fhWrite "Assembly Method\t$metadata->[11]\n";
+    print $fhWrite "Genome Coverage\t$metadata->[12]\n";
+    print $fhWrite "Sequencing Technology\t$metadata->[13]\n";
+    print $fhWrite "StructuredCommentSuffix\t##Genome-Assembly-Data-END##";
+    close($fhWrite);
+
+    if ( ( -e $sCmtFile ) && ( -s $sCmtFile ) ) {
+        printLogMsg( $DEBUG, "INFO : $sCmtFile file created successfully" );
+    } else {
+        printLogMsg( $ERROR,
+            "ERROR : $sCmtFile file creation failed. Reason : $?" );
+    }
 }
-
 
 ####################################################################################################################################################
 # Description   : Used to download read files from NCBI SRA FTP server using wget
-# Parameters    : phCmdLineArgs 
+# Parameters    : phCmdLineArgs
 #		  phCmdLineArgs - reference to hash of command line arguments passed to the perl script
 # Returns       : NA
 # Modifications :
 
 sub readInput {
-	my ($sFile, $metadata) = @_;
-	my $nI;
-	my $sLine;
-	my $fhRead;
-    	my $sSubName = (caller(0))[3];
+    my ( $sFile, $metadata ) = @_;
+    my $nI;
+    my $sLine;
+    my $fhRead;
+    my $sSubName = ( caller(0) )[3];
 
-	open($fhRead, "< $sFile") or printLogMsg($ERROR, "ERROR : Could not open $sFile file for reading. Reason : $!");
-	while($sLine=<$fhRead>) {
-		chomp($sLine);
-		next if($sLine =~ /^#/);
-		next if($sLine =~ /^\s+$/);
-		@{$metadata} = split(/\t/, $sLine);
-		# @meta : This script needs columns 0, 5-20, and either one (or both) of 4 and 21
+    open( $fhRead, "< $sFile" )
+      or printLogMsg( $ERROR,
+        "ERROR : Could not open $sFile file for reading. Reason : $!" );
+    while ( $sLine = <$fhRead> ) {
+        chomp($sLine);
+        next if ( $sLine =~ /^#/ );
+        next if ( $sLine =~ /^\s+$/ );
+        @{$metadata} = split( /\t/, $sLine );
+
+# @meta : This script needs columns 0, 5-20, and either one (or both) of 4 and 21
 #		[0] = Db name
 #		[1] = NCBI locus tag
 #		[2] = Path to rules file
@@ -315,49 +350,59 @@ sub readInput {
 #		[20]= Path to contact person address info
 #		[21]= Biosample ID
 
-		if(!length($metadata->[0])) {
-			printLogMsg($ERROR, "ERROR : Database name missing for $sLine.");
-		}
+        if ( !length( $metadata->[0] ) ) {
+            printLogMsg( $ERROR, "ERROR : Database name missing for $sLine." );
+        }
 
-		for($nI = 5; $nI <= 19; $nI++) {
-			if(!length($metadata->[$nI])) {
-				printLogMsg($WARN, "WARNING : Missing meta data value for column ".($nI + 1)." field. Thus resulting files .sbt and .cmt would have missing information");
-			}	
-		}
-		if (!length($metadata->[21]) && !length($metadata->[4])) {
-			printLogMsg($WARN, "WARNING : Neither Biosample ID nor Bioproject ID detected.  Highly recommended to have at least one for the .cmt and .sbt files");
-		}
+        for ( $nI = 5; $nI <= 19; $nI++ ) {
+            if ( !length( $metadata->[$nI] ) ) {
+                printLogMsg( $WARN,
+                        "WARNING : Missing meta data value for column "
+                      . ( $nI + 1 )
+                      . " field. Thus resulting files .sbt and .cmt would have missing information"
+                );
+            }
+        }
+        if ( !length( $metadata->[21] ) && !length( $metadata->[4] ) ) {
+            printLogMsg( $WARN,
+                "WARNING : Neither Biosample ID nor Bioproject ID detected.  Highly recommended to have at least one for the .cmt and .sbt files"
+            );
+        }
 
-		if (!length($metadata->[20]) ) {
-			printLogMsg($WARN, "WARNING : Path for author contact info not supplied.  Will use default parameters");
-		}
-		
-	}
-	close($fhRead);	
+        if ( !length( $metadata->[20] ) ) {
+            printLogMsg( $WARN,
+                "WARNING : Path for author contact info not supplied.  Will use default parameters"
+            );
+        }
+
+    }
+    close($fhRead);
 }
 
-
 ####################################################################################################################################################
-# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
+# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing.
 # Parameters    : phCmdLineArgs
 #		  phCmdLineArgs - reference to hash of command line arguments passed to the perl script
 # Returns       : NA
 # Modifications :
 
 sub checkCmdLineArgs {
-	my ($phCmdLineArgs) = @_;
-	my $sOption;
-	my @aRequired = ();
+    my ($phCmdLineArgs) = @_;
+    my $sOption;
+    my @aRequired = ();
 
-	if(exists($phCmdLineArgs->{'log'})) {
-		open($logfh, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n";
-	}
-	@aRequired = qw(input_file output_dir);
-        foreach $sOption(@aRequired) {
-                if(!defined($phCmdLineArgs->{$sOption})) {
-                        printLogMsg($ERROR,"ERROR! : Required option $sOption not passed");
-                }
+    if ( exists( $phCmdLineArgs->{'log'} ) ) {
+        open( $logfh, "> $phCmdLineArgs->{'log'}" )
+          or die
+          "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n";
+    }
+    @aRequired = qw(input_file output_dir);
+    foreach $sOption (@aRequired) {
+        if ( !defined( $phCmdLineArgs->{$sOption} ) ) {
+            printLogMsg( $ERROR,
+                "ERROR! : Required option $sOption not passed" );
         }
+    }
 }
 
 ####################################################################################################################################################
@@ -366,15 +411,15 @@ sub checkCmdLineArgs {
 # Parameters    : level = can be ERROR, WARNING or INFO
 #		  msg   = msg to be printed in the log file or to STDERR
 # Returns       : NA
-# Modifications : 
+# Modifications :
 
 sub printLogMsg {
-	my ($level, $msg) = @_;
-	if( $level <= $DEBUG ) {
-		print STDERR "$msg\n";
-		print $logfh "$msg\n" if(defined($logfh));
-		die "" if($level == $ERROR);
-	}	
+    my ( $level, $msg ) = @_;
+    if ( $level <= $DEBUG ) {
+        print STDERR "$msg\n";
+        print $logfh "$msg\n" if ( defined($logfh) );
+        die "" if ( $level == $ERROR );
+    }
 }
 
 __END__
