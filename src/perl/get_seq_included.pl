@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
 #get_seqs_noinlist.pl
 #input = list and fasta files

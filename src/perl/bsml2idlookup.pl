@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #Creates a tied lookup of the form
 #$lookup{$featureid} = $sequenceid

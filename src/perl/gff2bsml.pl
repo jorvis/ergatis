@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # NOTES
 #  -allow multiple transcripts/gene (each gets its own BSML feature group)

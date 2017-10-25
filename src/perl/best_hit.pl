@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # This program takes as input a single BTAB file containing
 # 1-way best hits, typically between the proteins in 2 or more 

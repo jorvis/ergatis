@@ -1,6 +1,6 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+eval 'exec /usr/bin/env perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
 #eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'

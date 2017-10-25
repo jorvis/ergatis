@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 =head1  NAME 
 
 psortb2bsml.pl - convert psortb output to BSML

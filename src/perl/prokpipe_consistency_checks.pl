@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 =head1 NAME
 prokpipe_consistency_checks.pl

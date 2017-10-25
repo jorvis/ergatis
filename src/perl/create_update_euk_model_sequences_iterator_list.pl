@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 =head1  NAME 
 
 create_update_euk_model_sequences_iterator_list.pl - Default output is a workflow iterator that

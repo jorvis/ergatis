@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -295,8 +295,8 @@ sub install_sybil {
     &run_cmd("mkdir -p $ROOT/sybiltmp/web;chmod 777 $ROOT/sybiltmp;chmod 777 $ROOT/sybiltmp/web/");
     &run_cmd("ln -s $ROOT/sybiltmp/web $PATH_TO_SYBIL/htdocs/tmp");
 
-    # Need to change any cgi scripts that are using /usr/local/bin/perl to /usr/bin/perl
-    &run_cmd("perl -pi -e 's[#!/usr/local/bin/perl][#!/usr/bin/perl]' $PATH_TO_SYBIL/cgi/shared/*.cgi");
+    # Need to change any cgi scripts that are using /usr/bin/env perl to /usr/bin/env perl
+    &run_cmd("perl -pi -e 's[#!/usr/bin/env perl][#!/usr/bin/env perl]' $PATH_TO_SYBIL/cgi/shared/*.cgi");
 
     # Need to install an older version of Bio::Graphics
     &run_cmd("cpan -i LDS/Bio-Graphics-1.96.tar.gz");

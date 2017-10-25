@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #./gff2fasta.pl [featuretype] [keysfile]
 #./gff3_to_fasta.pl --type|t <featuretype> --input_file|i <file> --output_fasta|o <file> [--sequence_type|s <featuretype]

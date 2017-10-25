@@ -1,5 +1,5 @@
-#!/usr/bin/perl
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+#!/usr/bin/env perl
+eval 'exec /usr/bin/env perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});

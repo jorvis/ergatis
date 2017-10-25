@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #Input from mummer
 #Output 
 #qry\tref\trefstart\trefend\tqrystart\tqryend

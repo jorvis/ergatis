@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 #-----------------------------------------------------------------------
 # program:   brcGff3ToBsml.pl
 # author:    Jay Sundaram

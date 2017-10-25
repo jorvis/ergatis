@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #./gff3_to_annotab.pl --type|t <featuretype> --input_file|i <file> --output_annotab|o <file> [--source|s <source>] [--id_attr <attr_field>]
 # seqID will be taken from id_attr if one is specified.  If id_attr is specified and a feature of <featuretype> lacks it, the script will die.

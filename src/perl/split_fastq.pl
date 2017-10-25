@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/env perl -w
 ##############################################################################
 ### This program breaks down a multi fastx file into multiple fastx files
 ### FastQ --> FastQ

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #./auto_annotate --input_file input/cya1.assembly.9.1.bsml --output_dir output/ --hmm_analysis input/hmmpfam.bsml.list --ber_input input/ber.bsml.list --hmm_info_db /usr/local/annotation/MOORE/data_dbs/hmmInfo.db --panda_header_offsets /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda --panda_header_file /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda_header --role_info_db /usr/local/devel/ANNOTATION/kgalens/data_dbs/roleInfo.db
 

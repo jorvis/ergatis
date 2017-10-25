@@ -1,6 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 
-eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+eval 'exec /usr/bin/env perl -w -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 # Copyright @ 2002 - 2010 The Institute for Genomic Research (TIGR).
 # All rights reserved.

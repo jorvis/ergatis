@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 use strict;

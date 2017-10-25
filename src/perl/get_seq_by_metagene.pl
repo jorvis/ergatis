@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl -w
 #get_seq_by_metagene.pl
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);

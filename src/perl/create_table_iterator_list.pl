@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 =head1  NAME 
 
 create_table_iterator_list.pl - 

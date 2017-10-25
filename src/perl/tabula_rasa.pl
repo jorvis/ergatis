@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # tabula_rasa.pl
 # execute a user-provided input_command in an iterator
 use strict;

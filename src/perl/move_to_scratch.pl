@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 =head1 move_to_scratch.pl - Script designed to move unwanted files to the scratch repository
 

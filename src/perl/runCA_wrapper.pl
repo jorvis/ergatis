@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 ## Will run the runCA executable with the passed in options.
 ## This will take in a list of files and call runCA using all 

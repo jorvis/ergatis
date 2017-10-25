@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 ## this section is just to help pull the load off the filer and
 ##  will probably be removed once we have a better solution.

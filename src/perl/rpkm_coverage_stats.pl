@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/env perl -w
 ##############################################################################
 ### This program generates coverage statistics from the alignment BAM file 
 ### across the genomic, genic, exonic, intronic, and/or intergenic regions

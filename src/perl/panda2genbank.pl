@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # modified version of generate_signature_sets.pl
 
 # Sample execution:
