@@ -5,7 +5,8 @@ sub get_perl_bins{
     my($instdir,$workflowdocsdir,$schemadocsdir);
     my(@binfiles);
     my($wrapper_str);
-    my $perl_path = $^X;  ## can be overwritten below
+	#my $perl_path = $^X;  ## can be overwritten below
+    my $perl_path = `which perl`;  ## can be overwritten below
     
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
