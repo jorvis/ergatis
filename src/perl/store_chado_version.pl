@@ -1,11 +1,5 @@
 #!/usr/bin/env perl
 
-eval 'exec /usr/bin/env perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib ".";
-
 =head1  NAME 
 
 store_chado_version.pl - 
