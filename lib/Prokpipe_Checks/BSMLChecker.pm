@@ -320,7 +320,7 @@ sub valid_start_stop_codons {
     open FH, "<$file" or die "Cannot open $file for reading: $!";
     while (<FH>) {
 	chomp;
-	if (/id=\"([\w\d]+\.\CDS\.\d+.\d+)\"/) {
+	if (/id=\"([\w\d]+\.CDS\.\d+.\d+)\"/) {
 	    $id = $1;
 	}
 	if (/source=\"([\/\w]+\.fsa)\"/) {
