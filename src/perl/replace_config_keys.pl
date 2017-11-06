@@ -9,6 +9,8 @@ use Config::IniFiles;
 use Ergatis::Logger;
 use Getopt::Long;
 
+my $WRITE_MODE = 0644;
+
 my %options;
 
 my $delimeter = '$;';
@@ -53,6 +55,7 @@ if(!$ret){
 
 #Perform second key replacement for nested keys
 my $finalcfg = &replace_keys($cfg);
+$finalcfg->SetWriteMode($WRITE_MODE);
 $finalcfg->WriteConfig($options{'output_conf'});
 
 $logger->debug("Wrote configuration file $options{'output_conf'}");
