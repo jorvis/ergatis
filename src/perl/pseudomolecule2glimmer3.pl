@@ -119,7 +119,8 @@ sub read_bsml {
 		my $line = $_;
 		chomp $line;
 		
-		if ($line =~ /class=\"assembly\" id=\"([^\"]+)\" molecule=/) {
+		# Apparently these attributes can be in a different order in the element
+		if ($line =~ /class=\"assembly\"/ && $line =~ /id=\"([^\"]+)\" molecule=/) {
 			print $outfh ">$1\n";
 		} 
 		# Grab the start and end pmark linker coords, and use to calculate gene coords
