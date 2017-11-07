@@ -9,7 +9,7 @@ use Config::IniFiles;
 use Ergatis::Logger;
 use Getopt::Long;
 
-my $WRITE_MODE = 0644;
+my $WRITE_MODE = "0777";
 
 my %options;
 
