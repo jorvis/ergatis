@@ -6,7 +6,8 @@ sub get_perl_bins{
     my(@binfiles);
     my($wrapper_str);
 	#my $perl_path = $^X;  ## can be overwritten below
-    my $perl_path = `which perl`;  ## can be overwritten below
+	#my $perl_path = `which perl`;  ## can be overwritten below
+	my $perl_path = "/usr/local/bin/perl";
     
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
