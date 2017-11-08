@@ -248,31 +248,4 @@ function main()
 end
 
 main()
-
-#=
-
-class Pangenome:
-
-    def calculate_pangenome(self, genomes, hp, gene_fh, print_genes_flag):
-        """ Will calculate the pangenome size for a particular set of genomes """
-        done_genomes = []
-        pangenome_size = 0
-
-        for g in genomes:
-            for gene in hp.profile[g].keys():
-                shared = False
-                # Increment pangenome size if gene hit isn't shared with a processed genome
-                ### I tried to implement any(x in list for x in dict) but it was slower
-                for g2 in done_genomes:
-                    if g2 in hp.profile[g][gene]:
-                        shared = True
-                        break
-                if not shared:
-                    pangenome_size += 1
-                    if print_genes_flag:
-                        gene_fh.write(g + ":" + gene + "\n")
-                    self.logger.debug(gene + " from genome " + g + " was added to the pangenome count")
-            done_genomes.append(g)
-        return pangenome_size
-
-=#
+quit()
