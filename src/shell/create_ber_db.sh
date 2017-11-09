@@ -53,11 +53,12 @@ then
 		if [ $prot_id ]
 		then
 			hit_id=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2 | sort -u`
+			echo $hit_id
 			id_to_fetch="$hit_id $id_to_fetch"
 		fi
 	done
 else
-	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
+	id_to_fetch=`cut -f6 $hits | sort -u | paste -s -d ' '`
 fi
 
 # Pass IDs to a file
