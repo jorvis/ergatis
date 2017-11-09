@@ -162,11 +162,11 @@ my $funcs = {'Feature'=>
 		     my ($expat,$elt,%params) = @_;
 		     if(exists $options{output_order}){
 			 if(exists $output_order->{lc($params{'feature-type'})}){
-			     $currgroup->{$params{'feature-type'}}->{$params{'featref'}}++;
+			     $currgroup->{lc($params{'feature-type'})}->{$params{'featref'}}++;
 			 }
 		     }
 		     else{
-			 $currgroup->{$params{'feature-type'}}->{$params{'featref'}}++;
+			 $currgroup->{lc($params{'feature-type'})}->{$params{'featref'}}++;
 		     }
 		 }
 	 };

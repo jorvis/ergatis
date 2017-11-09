@@ -13,7 +13,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>bsml2fasta</name>
+            <name>bsml2feature_relationships</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/bsml2featurerelationships</executable>
             <param>  
