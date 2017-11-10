@@ -53,6 +53,10 @@ done
 # This script needs to run in Python 2.7 or later but I'd like to keep a default python path in case
 if [ -z "$python_exec" ]; then
 	python_exec="/usr/bin/python"
+else
+    # Assuming final part of name is "bin/python"
+	python_ver=$(dirname $(dirname $python_exec))
+    source $python_ver.README
 fi
 
 cmd="$python_exec ${script_bin}/pangenome_fix_headers.py --input_file=${input_file} --output_file=${output_file} --mapping_file=${mapping_file}"
