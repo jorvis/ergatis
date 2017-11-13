@@ -271,7 +271,7 @@ sub parse_db_list {
 		my @fields = split(/,|\t/, $line)
 		my $db = $fields[0];
 		my $abbr = $fields[1];
-		my $fasta = $fields[23];
+		my $fasta = $fields[22];
         $db =~ s/^\s+//;	#Strip off spaces before both (space before abbr would be reflected in contig header)
         next if ($db eq "");	#safety check against a line starting with a comma
 		# A database will be assigned to one hash or the other, depending on if a FASTA file is to be copied
