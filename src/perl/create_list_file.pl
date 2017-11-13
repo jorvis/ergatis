@@ -122,7 +122,7 @@ sub check_options {
 #name to the $out file handle without the gz (or with .gz if the flag is on).
 sub process {
     my $filename = $File::Find::name;
-    (-f && $filename =~ /^$regex(\.gz)?$/) or return;
+    (-f && ! -z && $filename =~ /^$regex(\.gz)?$/) or return;
     $filename =~ s/\.(gz|gzip)$// unless($gz);
     print $out $filename."\n";
 }
