@@ -104,6 +104,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Data::Dumper;
 use DBI;
+use File::Copy qw(copy);
 
 ############# GLOBALS AND CONSTANTS ################
 my $DEBUG_LEVEL = 1;
@@ -122,6 +123,7 @@ my $LINKER;
 my $OUTPUT_DIR;
 my $CONTIG_STRING;
 my %db = ();
+my %no_db = ();
 my $contigs;
 my $db_abbr;
 ####################################################
@@ -142,7 +144,15 @@ my $results = GetOptions (\%options,
                           );
 
 &check_options(\%options);
-%db = &parse_db_list(\%options);
+(%db, %no_db) = &parse_db_list(\%options);
+
+foreach my $database (keys %no_db) {
+    print "Now preparing to copy fasta file $no_db{$database}...\n";
+    unless (-d $OUTPUT_DIR . "/$database") { mkdir $OUTPUT_DIR . "/$database";}	#Make output directory if it doesn't exist
+    my $dir = $OUTPUT_DIR . "/$database";
+
+   copy $no_db{$database}, $dir; 
+}
 
 foreach my $database (keys %db){
     print "Now preparing to dump $database...\n";
@@ -253,15 +263,23 @@ sub check_options {
 sub parse_db_list {
     my ($opts) = @_;
     my %database;
+	my %no_db;
     open LIST, $opts->{'database_list'} or die ("Cannot open database list for reading: $!\n");
     while (<LIST>) {
         chomp;
         my $line = $_;
-        my ($db, $abbr, $rest)= split(/,|\t/, $line, 3);	#split into db and abbr
+		my @fields = split(/,|\t/, $line)
+		my $db = $fields[0];
+		my $abbr = $fields[1];
+		my $fasta = $fields[23];
         $db =~ s/^\s+//;	#Strip off spaces before both (space before abbr would be reflected in contig header)
-        #print $parts[0], "\t", $parts[1], "\n";
         next if ($db eq "");	#safety check against a line starting with a comma
-        if (defined $abbr && length($abbr)) {	# If there is a database_abbreviation present, then assign it to the database key
+		# A database will be assigned to one hash or the other, depending on if a FASTA file is to be copied
+		if (defined $fasta && length $fasta) {
+			$no_db{$db} = $fasta;
+			next;
+		}
+        if (defined $abbr && length $abbr) {	# If there is a database_abbreviation present, then assign it to the database key
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
@@ -270,7 +288,7 @@ sub parse_db_list {
     }
     close LIST;
 
-    return %database;
+    return (%database, %no_db);
 }
 
 sub init {

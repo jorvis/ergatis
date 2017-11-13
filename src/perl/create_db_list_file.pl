@@ -58,6 +58,7 @@ B<--help,-h>
  20. Isolation source of the bacterial sample.
  21. Absolute path to file consisting of a tab-delimited address containing the contact person in 15)
  22. BioSample ID [for .sbt file creation]
+ 23. Path to a fasta file (for using dump_fasta to copy fasta file instead of dumping from Chado db)
  
  A comma-separated file can be used but it is not recommended unless you plan on entering only the first 4 columsn or less of data
 
