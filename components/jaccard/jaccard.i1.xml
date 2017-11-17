@@ -78,7 +78,7 @@
             <type>RunUnixCommand</type>
             <name>jaccard2fasta</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/CogProteinFastaNoMap</executable>
+            <executable>$;BIN_DIR$;/CogProteinFasta</executable>
             <param>  
                 <key>--cogFile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
