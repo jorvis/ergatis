@@ -69,7 +69,7 @@ if( !$cogFile )
 
 if( !$mapFile )
 {
-    $logger->logdie("Map file not specified");
+    print STDOUT("Map file not specified.  Proceeding without one");
 }
 
 if( !$outDir )
@@ -129,13 +129,13 @@ while( my $line = <INPUTCOGS> )
         # A new cog has been encountered, flush the previous to disk if present
         my $newcog = $1;
         $logger->debug("read cog $line $newcog");
-        &outputCog($cog, $list, $mapFile) if (defined($cog));
+        &outputCog($cog, $list) if (defined($cog));
         $cog = $newcog;
         $list = [];
     }
 }
 
-outputCog($cog,$list, $mapFile) if (defined($cog));
+outputCog($cog,$list) if (defined($cog));
 exit(0);
 
 ## subroutines
@@ -158,30 +158,28 @@ sub readMapFile {
         close(FR);
 }
 
-
 sub outputCog {
-	my($cog, $list, $map) = @_;
+	my($cog, $list) = @_;
+
 	my %hMap = ();
 	$logger->debug("outputting cog $cog");
 	if(scalar(@{$list})>1){
-		readMapFile($map, \%hMap);
+		readMapFile($mapFile, \%hMap) if (defined $mapFile);
 		if(@{$list} <= $maxCogSeqCount){
 			open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
 			open(FW, ">$transformed/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
 			foreach my $seq ( @{$list} )
 			{
 				print OUTFILE ">$seq\n";
-				if(exists($hMap{$seq})) {
+				if(defined $mapFile && exists($hMap{$seq})) {
 					print FW ">$hMap{$seq}\n";
 				} else {
 					print FW ">$seq\n";
-					print STDOUT "Could not find mapping for $seq in $map file\n";
+					print STDOUT "Could not find mapping for $seq in $mapFile file\n" if defined $mapFile;
 				}
 				my $residues = undef;
 				if ($use_feature_ids_in_fasta) {
 					my $seq_id = $Feat->{$seq};
-# Not sure why we would need to die here if we aren't dying below.
-#$logger->logdie("no sequence id found for feature with id=$seq") if (!defined($seq_id));
 					if($seq_id) {
 						$residues = $Prot->{$seq_id};
 					}
@@ -204,11 +202,11 @@ sub outputCog {
 			foreach my $seq ( @{$list} )
 			{
 				print OUTFILE ">$seq\n";
-				if(exists($hMap{$seq})) {
+				if(defined $mapFile && exists($hMap{$seq})) {
 					print FW ">$hMap{$seq}\n";
 				} else {
 					print FW ">$seq\n";
-					print STDOUT "Could not find mapping for $seq in $map file\n";
+					print STDOUT "Could not find mapping for $seq in $mapFile file\n" if defined $mapFile;
 				}
 				print OUTFILE "X\n";
 				print FW "X\n";
