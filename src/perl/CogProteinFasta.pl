@@ -69,7 +69,7 @@ if( !$cogFile )
 
 if( !$mapFile )
 {
-    print STDOUT("Map file not specified.  Proceeding without one");
+    print STDOUT "Map file not specified.  Proceeding without one\n" ;
 }
 
 if( !$outDir )

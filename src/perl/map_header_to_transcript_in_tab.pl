@@ -109,7 +109,7 @@ sub main {
     $transcripts = get_ordered_transcripts($frfile);
     #print "scalar headers: " . scalar(@$headers) . "\n";
     #print "scalar transcripts: " . scalar(@$transcripts) . "\n";
-    &_log($ERROR, "Incorrect number of headers to transcript IDs\n". scalar @$headers. " headers to ". scalar @$transcripts. " transcipts\n") if (scalar @$headers != scalar @$transcripts);
+    &_log($ERROR, "Incorrect number of headers to transcript IDs\n". scalar @$headers. " headers to ". scalar @$transcripts. " transcripts\n") if (scalar @$headers != scalar @$transcripts);
     sub_in_headers_in_tabfile($tabfile, $outfile, $headers, $transcripts);
     print_mapped_header_transcript($headers, $transcripts, $frfile, $mapping_path) if (defined $mapping_path);
     exit(0);
