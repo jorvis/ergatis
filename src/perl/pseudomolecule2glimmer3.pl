@@ -120,15 +120,17 @@ sub read_bsml {
 		chomp $line;
 		
 		# Apparently these attributes can be in a different order in the element
-		if ($line =~ /class=\"assembly\"/ && $line =~ /id=\"([^\"]+)\" molecule=/) {
+		if ($line =~ /class=\"assembly\"/ && $line =~ /id=\"([^\"]+)\"/) {
 			print $outfh ">$1\n";
 		} 
 		# Grab the start and end pmark linker coords, and use to calculate gene coords
-		if ($line =~ /startpos=\"(\d+)\" endpos=\"(\d+)\">/ ) {
+		if ($line =~ /startpos=\"(\d+)\"/) {
 			$end = $1;
 			next if ($end == 0);	#Pmark spacer at beginning of file.
-			write_tab($outfh, $start, $end, $header, $count++);
-			$start = $2 + 1;
+		    if ($line =~ /endpos=\"(\d+)\"/) {
+				write_tab($outfh, $start, $end, $header, $count++);
+				$start = $1 + 1;
+			}
 		}
 	}
 	
