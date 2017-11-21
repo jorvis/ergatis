@@ -109,7 +109,7 @@
             <name>create fasta list</name>
             <state>incomplete</state>
             <executable>find</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$; -name '*.fsa'</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$; -not -empty -name '*.fsa'</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.$;COMPONENT_NAME$;.fsa.list</value>
