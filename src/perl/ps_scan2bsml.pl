@@ -113,6 +113,7 @@ sub parsePs_scanData {
     my $file = shift;
     my $retHash;
     my ($seq, $prosite);
+	my ($start, $stop, $strand, $match_part);
 
     #Open the file (should be default output from ps_scan run).
     open(IN, "<$file") or 
@@ -120,31 +121,57 @@ sub parsePs_scanData {
 
     while(<IN>) {
 
-        if(/^>(.*)\s:(.*)$/) {
+        if(/^>(.*)\s:\s?(.*)$/) {
+			# Push final matchpart of previous sequence
+			my $match = { 'start'  => $start,
+					  'stop'   => $stop,
+					  'strand' => $strand,
+					  'match'  => $match_part };
+			push(@{$retHash->{$seq}->{$prosite}}, $match) if defined $match_part;
+			undef $match_part;
+
             $seq = $1;
             $seq =~ s/\s+//g;
             $prosite = $2;
 
             &_die("prosite ($prosite) or seq ($seq) was not set\n") unless($prosite && $seq);
         } else {
-            my @tmp = split(/[\s\t]+/);
+			my $non_header = $_;
+			$non_header =~ s/^[\s\t]+//;
+            my @tmp = split(/[\s\t]+/, $non_header);
 
-            if($tmp[1] > $tmp[3]) {
-                $tmp[0] = 1;
-                ($tmp[1], $tmp[3]) = ($tmp[3], $tmp[1]);
-            } else {
-                $tmp[0] = 0;
+			# Occasionally the match will extend to the next line.  Check if first field is a coord or match seq.
+			if ($tmp[0] =~ /^\D+/) {
+				$match_part .= $tmp[0];
+			} else {
+				# Push current matchpart into sequence
+            	my $match = { 'start'  => $start,
+                          'stop'   => $stop,
+                          'strand' => $strand,
+                          'match'  => $match_part };
+                push(@{$retHash->{$seq}->{$prosite}}, $match) if defined $match_part;
+
+            	if($tmp[0] > $tmp[2]) {
+            	    $strand = 1;
+            	    ($tmp[0], $tmp[2]) = ($tmp[2], $tmp[0]);
+            	} else {
+            	    $strand = 0;
+            	}
+
+				$start = $tmp[0] - 1;
+				$stop = $tmp[2] - 1;
+				$match_part = $tmp[3];
             }
-
-            my $match = { 'start'  => $tmp[1]-1,
-                          'stop'   => $tmp[3]-1,
-                          'strand' => $tmp[0],
-                          'match'  => $tmp[4] };
-
-            push(@{$retHash->{$seq}->{$prosite}}, $match);
         }
 
     }
+
+	# Final sequence matchpart
+	my $match = { 'start'  => $start,
+			  'stop'   => $stop,
+			  'strand' => $strand,
+			  'match'  => $match_part };
+    push(@{$retHash->{$seq}->{$prosite}}, $match);
 
     return $retHash;
 
