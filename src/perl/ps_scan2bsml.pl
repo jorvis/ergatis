@@ -171,7 +171,7 @@ sub parsePs_scanData {
 			  'stop'   => $stop,
 			  'strand' => $strand,
 			  'match'  => $match_part };
-    push(@{$retHash->{$seq}->{$prosite}}, $match);
+    push(@{$retHash->{$seq}->{$prosite}}, $match) if defined $match_part;
 
     return $retHash;
 
