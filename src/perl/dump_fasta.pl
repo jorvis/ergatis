@@ -144,7 +144,9 @@ my $results = GetOptions (\%options,
                           );
 
 &check_options(\%options);
-(%db, %no_db) = &parse_db_list(\%options);
+my ($db_ref, $no_db_ref) = &parse_db_list(\%options);
+%db = %$db_ref;
+%no_db = %$no_db_ref;
 
 foreach my $database (keys %no_db) {
     print "Now preparing to copy fasta file $no_db{$database}...\n";
@@ -268,7 +270,7 @@ sub parse_db_list {
     while (<LIST>) {
         chomp;
         my $line = $_;
-		my @fields = split(/,|\t/, $line);
+		my @fields = split(/\t/, $line);
 		my $db = $fields[0];
 		my $abbr = $fields[1];
 		my $fasta = $fields[22];
@@ -283,12 +285,12 @@ sub parse_db_list {
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
-             $database{$db} = undef;
+            $database{$db} = undef;
         }
     }
     close LIST;
 
-    return (%database, %no_db);
+    return (\%database, \%no_db);
 }
 
 sub init {
