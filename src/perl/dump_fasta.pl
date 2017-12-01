@@ -105,6 +105,7 @@ use Pod::Usage;
 use Data::Dumper;
 use DBI;
 use File::Copy qw(copy);
+use File::Basename;
 
 ############# GLOBALS AND CONSTANTS ################
 my $DEBUG_LEVEL = 1;
@@ -152,8 +153,9 @@ foreach my $database (keys %no_db) {
     print "Now preparing to copy fasta file $no_db{$database}...\n";
     unless (-d $OUTPUT_DIR . "/$database") { mkdir $OUTPUT_DIR . "/$database";}	#Make output directory if it doesn't exist
     my $dir = $OUTPUT_DIR . "/$database";
+	my ($fsa_base, $fsa_dir, $fsa_ext) = fileparse($no_db{$database}, qr/\.[^.]*/);
 
-   copy $no_db{$database}, $dir; 
+   copy $no_db{$database}, "$dir/${fsa_base}_new.fsa"; 
 }
 
 foreach my $database (keys %db){

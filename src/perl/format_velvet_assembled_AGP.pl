@@ -1,4 +1,4 @@
-#!/usr/bin perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -75,7 +75,7 @@ open($agp, "> $agp_file") or die "Could not open $agp_file for writing\n";
 &create_contig_hash();
 
 if ((-e $corrected_fsa) && (-s $corrected_fsa)) {
-	system("$Bin/clean_fasta.pl $corrected_fsa");
+	system("perl $Bin/clean_fasta.pl $corrected_fsa");
 } else {
 	print STDERR "Not able to clean parse newly created fasta file $corrected_fsa\n";
 }
@@ -97,7 +97,7 @@ sub check_options {
 		die "ERROR : Output directory is required\n";	
 	}
 	if ($options{'tbl_file'}) {
-		my ($tbl_dir, $tbl_ext);
+	my ($tbl_dir, $tbl_ext);
 		($tbl_base, $tbl_dir, $tbl_ext) = fileparse($options{'tbl_file'}, qr/\.[^.]*/);
 		$corrected_tbl = $options{'output_dir'}."/".$tbl_base."_corrected".$tbl_ext;
 		open($ctbl, "> $corrected_tbl") or die "Could not open $corrected_tbl for writing\n";
@@ -109,6 +109,7 @@ sub check_options {
 	if ($options{'fsa_file'}) {
 		my ($fsa_base, $fsa_dir, $fsa_ext);
 		($fsa_base, $fsa_dir, $fsa_ext) = fileparse($options{'fsa_file'}, qr/\.[^.]*/);
+		$tbl_base = $fsa_base if $no_table;
 		$corrected_fsa = $options{'output_dir'}."/".$fsa_base."_corrected".$fsa_ext;
 		open($cfsa, "> $corrected_fsa") or die "Could not open $corrected_fsa for writing\n";
 	} else {
@@ -470,14 +471,7 @@ sub check_contig_len {
 	my $annot_yes = 1;
 	if ($seq_length < $min_contig_len) {
 		$annot_yes = 0;
-#		$tbl_head = `grep -o -w $head $options{'tbl_file'}`;
-#		chomp($tbl_head);
-#		$tbl_head =~ s/^\s+|\s+$//;
-#		if ($tbl_head eq $head) {
-#			$annot_yes = 1;
-#		} else {
 		print STDERR "Removing $head from FASTA file as it is less than $min_contig_len bp in length\n";
-#		}
 	}
 	return($annot_yes);
 }
@@ -532,9 +526,6 @@ sub split_contig {
 			$part_num++;
 			$start_pos = $contig_hash{$head}{$print_contigs[$j]}{'end_pos'} - $sub_offset + 1;
 		}
-#		if($contig_hash{$head}{$print_contigs[$j-1]}{'end_pos'} < length($sequence)) {
-#			print $agp "$head\t$start_pos\t".length($sequence)."\t$part_num\tN\t".(length($sequence) - $start_pos + 1)."\tscaffold\tyes\tpaired-ends\n";
-#		}
 	}
 	return($frags_size);
 }
