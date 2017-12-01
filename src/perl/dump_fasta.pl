@@ -268,7 +268,7 @@ sub parse_db_list {
     while (<LIST>) {
         chomp;
         my $line = $_;
-		my @fields = split(/,|\t/, $line)
+		my @fields = split(/,|\t/, $line);
 		my $db = $fields[0];
 		my $abbr = $fields[1];
 		my $fasta = $fields[22];
