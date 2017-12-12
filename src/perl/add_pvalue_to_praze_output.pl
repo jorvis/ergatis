@@ -103,9 +103,6 @@ sub initialize_pvalues {
 }
 
 sub add_pvalues {
-	#Add dummy p-value to praze results that did not have BLAST hits to ensure it never ranks among the best results
-	#my $dummy = "1.00e+100";	
-
 	while (my $line = <$praze_btab>) {
 		chomp $line;
 		my @tokens = split /\t/, $line;
@@ -116,13 +113,8 @@ sub add_pvalues {
         $subject_name =~ s/^lcl\|//;
         my $p_value;
         if (exists $p_values{$query_name}{$subject_name}){
-			#next if $p_ident < $IDENTITY_CUTOFF || $p_sim < $SIMILARITY_CUTOFF;
 			$p_value = $p_values{$query_name}{$subject_name};
 			print $out "$line\t$p_value\n";
-		} #else {
-			#$p_value = $dummy;
-			#print STDERR "No p-value found for $subject_name on query $query_name.  Inserting dummy p-value\n";
-		#}
-		#print $out "$line\t$p_value\n";
+		}
 	}
 }
