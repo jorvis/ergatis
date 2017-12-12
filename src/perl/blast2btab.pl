@@ -82,7 +82,6 @@ composed of the following columns.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use bigint;
 BEGIN {
 use Ergatis::Logger;
 }
@@ -92,9 +91,9 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input|i=s',
                           'output|o=s',
-			  'split|s=s',
+                          'split|s=s',
                           'log|l=s',
-			  'debug|d=s',
+                          'debug|d=s',
                           'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -168,6 +167,7 @@ while( my $result = $in->next_result ) {
             $x[10] = sprintf ("%.1f", $hsp->percent_identity());   
 
             my $similarity = $hsp->frac_conserved('total') * 100; 
+			#print "QUERY\t$x[0]\tHIT\t$x[5]\tSIM\t$similarity\n";
             $x[11] = sprintf("%.1f", $similarity);
             $x[12] = $hsp->score();
             $x[13] = $hsp->bits();
@@ -189,9 +189,9 @@ while( my $result = $in->next_result ) {
             $x[19] = $hsp->evalue();
             $x[20] = $hsp->pvalue();
 
-            if( !defined( $x[20] ) ) {
-                $x[20] = &calculate_pvalue( $x[19] );
-            }
+            $x[20] = $x[19] if (! defined $x[20]);
+			# If e-val used to define p-val, make sure p-val does not exceed 1
+			$x[20] = 1.0 if $x[20] > 1.0;
 
 	    my $outline = join ("\t", @x);
 	    if(exists $options{'split'} && $options{'split'}){
@@ -209,17 +209,6 @@ while( my $result = $in->next_result ) {
             print $currofh "$outline\n";
         }
     }
-}
-#See http://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html
-sub calculate_pvalue {
-    my $evalue = shift;
-
-    my $estimate = 0.57721566490153;
-    
-    #my $p = 1 - (bexp( (-1*$evalue), 4 ) );
-    ( 1 - ( $estimate**(-1*$evalue) ) );
-    return $evalue;
-    
 }
 
 sub check_parameters {

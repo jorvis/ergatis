@@ -80,7 +80,6 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use bigint;
 use DBI;
 use Bio::DB::Fasta;
 
@@ -165,6 +164,7 @@ sub read_input {
 		$btab_arr->[17] = 1;
 		$btab_arr->[18] = get_hit_len($btab_arr->[5]);	
 		$btab_arr->[20] = calculate_pvalue($btab_arr->[19]);
+		$btab_arr->[20] = 1.0 if $btab_arr->[20] > 1.0;
 		#&_log($DEBUG, join("\t", @$btab_arr));
 		print $ofh join("\t", @$btab_arr), "\n";
 	}
@@ -237,16 +237,9 @@ sub get_hit_len {
 	return $hit_len;
 }
 
-#See http://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html
 sub calculate_pvalue {
     my $evalue = shift;
-
-    my $estimate = 0.57721566490153;
-
-    #my $p = 1 - (bexp( (-1*$evalue), 4 ) );
-	#( 1 - ( $estimate**(-1*$evalue) ) );
     return $evalue;
-
 }
 
 sub check_options {

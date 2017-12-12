@@ -8,7 +8,7 @@
             <name>filter hits</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/ber_blast_hit_selector</executable>
-            <arg>-i $;I_FILE_PATH$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab.tmp -e $;MAX_E_VALUE$; -E $;MAX_P_VALUE$; -n $;MAX_NUM_HITS$; -N $;MAX_NUM_HITS_PER_REGION$; -V $;MIN_NUM_EXPERIMENTAL$;</arg>
+            <arg>-i $;I_FILE_PATH$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab.tmp -E $;MAX_P_VALUE$; -n $;MAX_NUM_HITS$; -N $;MAX_NUM_HITS_PER_REGION$; -V $;MIN_NUM_EXPERIMENTAL$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
