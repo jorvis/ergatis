@@ -21,6 +21,8 @@ use base qw(PFunc::EvidenceParser);
 my $annotation_type = "HMM";
 my $default_hmm_info = "coding_hmm.lib.db";
 
+my $annotation_evalue = 100;
+
 sub new {
     my ($class, %args) = @_;
     my $self = $class->SUPER::new( %args );
@@ -169,7 +171,11 @@ sub _process_hmm_coding_alignment {
     die("Could not find total_score Attribute element") unless( $total_score_att );
     my $total_score = $total_score_att->att('content') if( defined( $total_score_att ) );
     
-    ## we need both IDs and the score to continue
+	my ($total_evalue_att) = $spa->find_nodes('Attribute[@name="total_e_value"]');
+	warn("Could not find total_e_value Attribute element.  Keeping original annotation if tiebreaker") unless( $total_evalue_att );
+	my $total_evalue = $total_evalue_att->att('content') if( defined( $total_evalue_att ) );
+    
+	## we need both IDs and the score to continue
     unless ( $ref_id && $comp_id && defined $total_score ) {
         die "failed to get ref_id, comp_id and total_score from Seq-pair-alignment";
     }
@@ -205,6 +211,7 @@ sub _process_hmm_coding_alignment {
                     die("Could not get current_type [$current_type] for $comp_id")
                         if( !defined( $current_type ) );
                     $self->_assign_annotation( $annotation, $hmm_info, $comp_id, $current_type );
+					$annotation_evalue = $total_evalue if (defined $total_evalue);
                     
                 } elsif( defined( $gpn_type_score ) && 
                          $self->_get_isotype_score( $current_type ) == $gpn_type_score ) {
@@ -230,10 +237,16 @@ sub _process_hmm_coding_alignment {
                     if( $possible_count > $cur_count ) {
                         #set the current annotation
                         $self->_assign_annotation( $annotation, $hmm_info, $comp_id, $current_type );
-                    }
-
+						$annotation_evalue = $total_evalue if (defined $total_evalue);
+                    } elsif ($possible_count == $cur_count) {
+						# For tiebreakers, use match's e-value scores for tiebreaker
+						if (defined $total_evalue && $total_evalue < $annotation_evalue) {
+							#set the current annotation
+							$self->_assign_annotation( $annotation, $hmm_info, $comp_id, $current_type );
+							$annotation_evalue = $total_evalue;
+						}
+					}
                 }
-                
             }
         }
         
