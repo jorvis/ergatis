@@ -30,16 +30,16 @@ my $dce_param_map = { 'OS' => "OS", 'EXECUTION_HOST' => "executionHost",
 my $default_memory='100M';                      
                       
 my $results = GetOptions (\%options, 
-			  'keys=s',
-			  #opts for replacing keys in a single template file
+                          'keys=s',
+                          #opts for replacing keys in a single template file
                           'template_xml|t=s', 
-			  'template_xml_conf_key|k=s',
+                          'template_xml_conf_key|k=s',
                           'output_xml|o=s', 
-			  'component_conf|c=s',
-			  #opts for replacing keys in an iterator list
-                          'output_dir|o=s',
+                          'component_conf|c=s',
+                          #opts for replacing keys in an iterator list
+                          'output_dir|O=s',
                           'iterator_list|l=s', 
-			  'distribopts|d=s',
+                          'distribopts|d=s',
                           'log=s',
                           'debug=s', 
                           'help|h' );
