@@ -383,18 +383,17 @@ sub delete_gene {
 
   $logger->debug("POSTing to $delete_url to delete $transcript_id");
   if (!$res->is_success) {
-    # we expect to get a 302 Moved response
-    if ($res->status_line =~ /302 Moved/) {
+    # we expect to get a 302 Moved or 302 Found response
+    if ($res->status_line =~ /302 (Moved|Found)/) {
       my $location = $res->header('Location');
       my $tidrw = $transcript_id;
       $tidrw =~ s/\./\\./;
       if ($location =~ /ORF_infopage\.cgi\?orf=$tidrw/) {
-        $logger->info("deleted $transcript_id successfully");
         $logger->debug("delete response=" . $res->content());
         $logger->debug("302 Location=" . $location);
-        return 1;
+    	$logger->info("deleted $transcript_id successfully");
+    	return 1;
       }
-    }
   }
 
   $logger->debug("delete status_line=" . $res->status_line());
