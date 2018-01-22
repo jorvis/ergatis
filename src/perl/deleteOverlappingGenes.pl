@@ -203,7 +203,7 @@ foreach my $gene (@$genes) {
   		$gene->{'transcript_id'} = $transcript_id;
   		push(@$genes_to_delete, $gene);
   		$logger->debug("DELETE CDS\t" . $gene->{'lines'}->[0]);
-  	} else {
+#  	} else {
 #  		my $transcript_id = &get_transcript_id($get_rna_sth, $rna);
 #  		if (!defined($transcript_id)) {
 #    		$logger->logdie("unable to map RNA $rna to transcript_id");
@@ -394,6 +394,7 @@ sub delete_gene {
     	$logger->info("deleted $transcript_id successfully");
     	return 1;
       }
+	}
   }
 
   $logger->debug("delete status_line=" . $res->status_line());
