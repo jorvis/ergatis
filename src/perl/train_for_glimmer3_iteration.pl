@@ -277,6 +277,13 @@ sub check_parameters {
     $glimmerDir = $opts->{'glimmer3_dir'} || $logger->logdie("Option glimmer3_dir is required");
     $elph = $opts->{'elph_bin'} || $logger->logdie("Option elph_bin is required");
 
+	unless (-e $elph) {
+		$logger->logdie("Path $elph is not valid");
+	}
+	unless (-d $glimmerDir) {
+		$logger->logdie("Path $glimmerDir is not valid");
+	}
+
     # option confIniFile is required
     unless($opts->{'conf_ini_file'}) {
         $logger->logdie("Option conf_ini_file is required");
