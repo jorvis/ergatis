@@ -204,14 +204,14 @@ foreach my $gene (@$genes) {
   		push(@$genes_to_delete, $gene);
   		$logger->debug("DELETE CDS\t" . $gene->{'lines'}->[0]);
   	} else {
-#  		my $transcript_id = &get_transcript_id($get_rna_sth, $rna);
-#  		if (!defined($transcript_id)) {
-#    		$logger->logdie("unable to map RNA $rna to transcript_id");
-#  		}
-#  		$logger->debug("mapped RNA $rna to $transcript_id");
-#  		$gene->{'transcript_id'} = $transcript_id;
-#  		push(@$rnas_to_delete, $gene);
-#  		$logger->debug("DELETE RNA\t" . $gene->{'lines'}->[1]);
+  		my $transcript_id = &get_transcript_id($get_rna_sth, $rna);
+  		if (!defined($transcript_id)) {
+    		$logger->logdie("unable to map RNA $rna to transcript_id");
+  		}
+  		$logger->debug("mapped RNA $rna to $transcript_id");
+  		$gene->{'transcript_id'} = $transcript_id;
+  		push(@$rnas_to_delete, $gene);
+  		$logger->debug("DELETE RNA\t" . $gene->{'lines'}->[1]);
   	}
   	$cds_ids->{$cds} = 1;
 }
