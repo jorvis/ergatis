@@ -155,7 +155,7 @@ foreach my $database (keys %no_db) {
     my $dir = $OUTPUT_DIR . "/$database";
 	my ($fsa_base, $fsa_dir, $fsa_ext) = fileparse($no_db{$database}, qr/\.[^.]*/);
 
-   copy $no_db{$database}, "$dir/${fsa_base}_new.fsa"; 
+   copy $no_db{$database}, "$dir/${fsa_base}.fsa"; 
 }
 
 foreach my $database (keys %db){
