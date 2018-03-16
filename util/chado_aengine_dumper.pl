@@ -704,8 +704,10 @@ if ( $options{cgi_mode} == 1 ) {
     print "Content-Disposition:attachment;filename=$download_file_name\n\n";
 }
 
-## if writing tbl format, all output goes into a single file
+## if writing tbl or gff3 format, all output goes into a single file
 my $tbl_fh;
+my $gff_fh;
+
 if ( $options{format} eq 'tbl' ) {
 
     if ( $options{cgi_mode} == 1 ) {
@@ -714,6 +716,20 @@ if ( $options{format} eq 'tbl' ) {
         _log("INFO: writing $options{output_directory}/$options{database}.tbl");
         open($tbl_fh, ">$options{output_directory}/$options{database}.tbl") || die "can't create TBL output file: $!";
     }
+} elsif ($options{format} eq 'gff') {
+
+  if ( $options{cgi_mode} == 1 ) {
+      open($gff_fh, ">".$options{output_directory}."/".$download_file_name) || die "can't create GFF output file: $!";
+  } else {
+      _log("INFO: writing $options{output_directory}/$options{database}.gff3");
+      my $file;
+      if( $options{'use_assembly_names'} ) {
+          $file = "$options{output_directory}/$options{database}.gff3";
+      } else {
+          $file = "$options{output_directory}/$options{database}.gff3";
+      }
+      open($gff_fh, "> $file") || die "can't create GFF output file [$file]: $!";
+  }
 }
 
 my $gbk;
@@ -909,20 +925,7 @@ for my $feature_id ( keys %$assemblies ) {
 
     } elsif ( $options{format} eq 'gff' ) {
 
-        my $gff_fh;
 
-        if ( $options{cgi_mode} == 1 ) {
-            open($gff_fh, ">".$options{output_directory}."/".$download_file_name) || die "can't create GFF output file: $!";
-        } else {
-            _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gff3");
-            my $file;
-            if( $options{'use_assembly_names'} ) {
-                $file = "$options{output_directory}/$$assemblies{$feature_id}{name}.gff3";
-            } else {
-                $file = "$options{output_directory}/$$assemblies{$feature_id}{uniquename}.gff3";
-            }
-            open($gff_fh, "> $file") || die "can't create GFF output file [$file]: $!";
-        }
 
 		my %gene_locus;
 
