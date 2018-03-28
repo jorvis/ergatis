@@ -64,8 +64,8 @@ exit(0);
 
 sub profileBSMLFile {
     my ($file) = @_;
-    my $doc = new BsmlDoc;
-    my $parser = new BsmlParserTwig;
+    my $doc = BSML::BsmlDoc->new();
+    my $parser = BSML::BsmlParserTwig->new();
     $parser->parse( \$doc, $file );
     print Dumper($doc->{'BsmlSequences'});
 }
