@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-# For BsmlParserTwig
+# For BsmlParserTwig and BsmlDoc
 use lib '/local/projects/ergatis/package-nightly/lib/perl5/';
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -67,7 +67,7 @@ sub profileBSMLFile {
     my $doc = new BsmlDoc;
     my $parser = new BsmlParserTwig;
     $parser->parse( \$doc, $file );
-    say Dumper($doc->{'BsmlSequences'});
+    print Dumper($doc->{'BsmlSequences'});
 }
 
 sub compareFiles {
