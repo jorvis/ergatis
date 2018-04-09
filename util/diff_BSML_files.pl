@@ -67,7 +67,8 @@ sub profileBSMLFile {
     my $doc = BSML::BsmlDoc->new();
     my $parser = BSML::BsmlParserTwig->new();
     $parser->parse( \$doc, $file );
-    print Dumper($doc->{'BsmlSequences'});
+    print Dumper($doc);
+    exit(0);
 }
 
 sub compareFiles {
