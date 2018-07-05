@@ -10,7 +10,8 @@ map_header_to_transcript_in_tab.pl - Description
  USAGE: map_header_to_transcript_in_tab.pl
  	   --tabfile=/path/to/annotated.tab
        --feature_relationship_file=/path/to/some/bsml2featurerelaionship.mapping.txt
-       --fasta_list=/path/to/multifasta.list
+       --pseudomolecule_list=/path/to/multifasta.list
+       --print_mapping 1
        --output_file=/path/to/transterm.file
      [ --log=/path/to/file.log
        --debug=3
