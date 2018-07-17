@@ -70,7 +70,7 @@ if (defined($infile2)){
 print "$0 program execution has completed\n";
 print "Please review log file '$logfile'\n";
 exit(0);
-  
+
 ##--------------------------------------------------------------------------------------------------------------------------------------------
 ##
 ##  END OF MAIN -- SUBROUTINES FOLLOW
@@ -86,7 +86,7 @@ sub addTimeStamp {
     my ($msg) = @_;
     my $date = `date`;
     chomp $date;
-    print LOGFILE "$msg $date\n"; 
+    print LOGFILE "$msg $date\n";
 }
 
 ##----------------------------------------------------------------------
@@ -107,7 +107,7 @@ sub profileBSMLFile {
 
 	chomp $line;
 	$lineCtr++;
-	
+
 	if ($line =~ /^\s+<\/(\S+)/){
 	    $masterProfileLookup->{$file}->{'closingTagCtr'}->{$1}++;
 	    next;
@@ -196,7 +196,7 @@ sub profileBSMLFile {
 	elsif ($line =~ /<Multiple-alignment-table /){
 	    $masterProfileLookup->{$file}->{'multipleAlignmentTableCtr'}++;
 	}
-	
+
     }
 
     $masterProfileLookup->{$file}->{'uniqueFeatureGroupMemberCtr'} = keys %{$masterProfileLookup->{$file}->{'uniqueFeatureGroupMemberCtr'}};
@@ -204,7 +204,7 @@ sub profileBSMLFile {
     $masterProfileLookup->{$file}->{'lineCtr'} = $lineCtr;
 
     &addTimeStamp("Profiling of BSML file '$file' completed at ");
-    
+
 }
 
 ##----------------------------------------------------------------------
@@ -230,7 +230,7 @@ sub recordFindings {
 			    'seqPairAlignmentCtr' => "<Seq-pair-alignment>",
 			    'seqPairRunCtr' => "<Seq-pair-run>",
 			    'linkCtr' => "<Link>",
-			    'multipleAlignmentTableCtr' => "<Multiple-alignment-table>"			  
+			    'multipleAlignmentTableCtr' => "<Multiple-alignment-table>"
 			};
 
     my $profileLookupHeadings = { 'organismTypeCtr' => "<Organism> elements by genus-species were:",
@@ -244,8 +244,8 @@ sub recordFindings {
 				  'linkHrefCtr' => "<Link> elements by href were:",
 				  'linkRoleCtr' => "<Link> elements by role are were:"
 			      };
-    
-    
+
+
     print LOGFILE "\n\n$masterProfileLookup->{$file}->{'lineCtr'} lines were processed in BSML file '$file'\n\n";
     print LOGFILE "BSML element counts were:\n";
 
@@ -299,7 +299,7 @@ sub compareFiles {
 			    'seqPairAlignmentCtr' => "<Seq-pair-alignment>",
 			    'seqPairRunCtr' => "<Seq-pair-run>",
 			    'linkCtr' => "<Link>",
-			    'multipleAlignmentTableCtr' => "<Multiple-alignment-table>"			  
+			    'multipleAlignmentTableCtr' => "<Multiple-alignment-table>"
 			};
 
     my $profileLookupHeadings = { 'organismTypeCtr' => "<Organism> by genus-species",
@@ -313,7 +313,7 @@ sub compareFiles {
 				  'linkHrefCtr' => "<Link> by href",
 				  'linkRoleCtr' => "<Link> by role"
 			      };
-    
+
     foreach my $counterType (keys %{$profileHeadings} ){
 	my $count1=$masterProfileLookup->{$file1}->{$counterType};
 	my $count2=$masterProfileLookup->{$file2}->{$counterType};
@@ -334,7 +334,7 @@ sub compareFiles {
  	foreach my $key (keys %{$masterProfileLookup->{$file2}->{$lookupType}} ){
 	    $uniqueKeysLookup->{$key}++;
 	}
-	
+
 	foreach my $key (keys %{$uniqueKeysLookup}) {
 	    my $count1=$masterProfileLookup->{$file1}->{$lookupType}->{$key};
 	    my $count2=$masterProfileLookup->{$file2}->{$lookupType}->{$key};
@@ -374,7 +374,7 @@ sub checkFile {
 	print "input BSML file '$file' has no content\n";
 	$status=0;
     }
-    
+
     return $status;
 }
 
@@ -393,7 +393,7 @@ sub print_usage {
 ##----------------------------------------------------------------------
 sub report {
     my ($msg, $lookup) = @_;
-    
+
     print LOGFILE "\n\n$msg\n";
     foreach my $key ( sort keys %{$lookup}){
 	print LOGFILE "$key\t\t$lookup->{$key}\n";

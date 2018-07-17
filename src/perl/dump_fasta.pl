@@ -154,8 +154,10 @@ foreach my $database (keys %no_db) {
     unless (-d $OUTPUT_DIR . "/$database") { mkdir $OUTPUT_DIR . "/$database";}	#Make output directory if it doesn't exist
     my $dir = $OUTPUT_DIR . "/$database";
 	my ($fsa_base, $fsa_dir, $fsa_ext) = fileparse($no_db{$database}, qr/\.[^.]*/);
-
-   copy $no_db{$database}, "$dir/${fsa_base}.fsa"; 
+    my $dest_file = $dir . "/" . $fsa_base . ".fsa";
+    $Data::Dumper::Useqq = 1;
+    print Dumper( [ $no_db{$database}, $dest_file ] );
+    copy $no_db{$database}, $dest_file or die "Copy failed: $!"; 
 }
 
 foreach my $database (keys %db){
@@ -272,6 +274,8 @@ sub parse_db_list {
     while (<LIST>) {
         chomp;
         my $line = $_;
+        # Had instance where only carriage return was left, breaking things
+        $line =~ s/\r$//;
 		my @fields = split(/\t/, $line);
 		my $db = $fields[0];
 		my $abbr = $fields[1];
