@@ -125,7 +125,7 @@ end
 
 function get_theoretical_comps(genomes::Integer, i::Integer)
     # Get number of combinations for the given size pangenome
-    factorial(genomes) / (factorial(genomes - i) * factorial(i-1))
+    factorial(big(genomes)) / (factorial(big(genomes - i)) * factorial(big(i-1)))
 end
 
 function create_reference_string(reference_set)
@@ -184,7 +184,7 @@ function do_analysis_with_sampling(args, hp::HitsProfile, fh)
     # Iterate through each possible pangenome size
     for i = 1:(hp.num_genomes-1)
         tic()
-        print("Running analysis with $i genomes...")
+        #print("Running analysis with $i genomes...")
         sampling_counter = Dict{String, Integer}()
 
         fac_numer = factorial(big(hp.num_genomes-1))    # Must convert to BigInt first
@@ -236,7 +236,8 @@ function do_analysis_with_sampling(args, hp::HitsProfile, fh)
         end
 
         elapsed = toq()
-        println("time elapsed: $elapsed secs")
+        #println("time elapsed: $elapsed secs")
+	println("$i\t$elapsed")
     end
 
 end

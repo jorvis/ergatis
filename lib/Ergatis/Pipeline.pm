@@ -568,6 +568,8 @@ umask(0000);
         my $running_components = ();
         my $component_list = build_twig($self->{path});
         my %prev_component_states = ();
+        my $elapsed_time = 0;
+        my $timeout_flag = 0;
         do {
             $p_state = $self->pipeline_state;
             # Populate hash with previous states
@@ -583,14 +585,22 @@ umask(0000);
                     handle_component_status_changes($component_list, \%prev_component_states);
                 }
             }
-            sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/ );
-        } while ( $p_state =~ /(running|pending|waiting|incomplete)/ );
+            if ( $p_state =~ /(running|pending|waiting|incomplete)/ ) {
+                # If pipeline running time (in secs) exceeds time limit (in hrs), kill the run
+                if ($args{'time_limit'}) {
+                    $timeout_flag = 1 if ($elapsed_time > $args{'time_limit]'}*3600);
+                }
+                sleep 60;
+                $elapsed_time += 60;
+            };
+        } while ( $p_state =~ /(running|pending|waiting|incomplete)/ && !$timeout_flag );
 
         # If end-state is complete, return 1.  Otherwise return 0
         return 1 if ($p_state eq 'complete');
-        if ($p_state =~ /(failed|error)/ ) {
+        if ($p_state =~ /(failed|error)/ or $timeout_flag) {
             # Return a hash of useful diagnostics
             $self->{diagnostics} = report_failure_info($self->{path}, $self->{id});
+            print STDERR "Pipeline running time exceed max time limit.  Pipeline killed\n" if $timeout_flag;
         }
         return 0;
     }
