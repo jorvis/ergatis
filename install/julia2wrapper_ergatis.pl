@@ -45,6 +45,7 @@ sub get_julia_bins{
 	    my($strip_fname) = ($fname =~ /(.*)\.jl$/);
 	    open WRAPPER, "+>bin/$strip_fname" or die "Can't open file bin/$strip_fname\n";
 	    my($shell_args)  = q/"$@"/;
+        my $LD_LIBRARY_PATH = '$LD_LIBRARY_PATH';
 	    my $addbuffer = $envbuffer;
             print WRAPPER <<_END_WRAPPER_;
 #!/bin/sh
