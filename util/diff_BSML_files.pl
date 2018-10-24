@@ -20,7 +20,7 @@ use BSML::BsmlDoc;
 use BSML::BsmlParserTwig;
 
 ## Command-line options
-my ($debug, $infile, $infile2, $help, $logfile, $man, $asmbl_id);
+my ($debug, $infile, $infile2, $help, $logfile, $man);
 
 my $results = GetOptions (
     'debug=s'    => \$debug,
@@ -29,7 +29,6 @@ my $results = GetOptions (
     'man|m=s'    => \$man,
     'infile=s'   => \$infile,
     'infile2=s'  => \$infile2,
-    'asmbl_id=s' => \$asmbl_id
     );
 
 print_usage() if ($help);
