@@ -6,7 +6,7 @@ pseudomolecule2glimmer3.pl - Get coordinates from genes that were put into a pse
 
 =head1 SYNOPSIS
 
- USAGE: perl_template.pl
+ USAGE: pseudomolecule2glimmer3.pl
        --input_file=/path/to/some/input.file
        --output=/path/to/transterm.file
      [ --log=/path/to/file.log

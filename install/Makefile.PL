@@ -2,9 +2,9 @@ use ExtUtils::MakeMaker;
 use ExtUtils::MakeMaker::Config;
 require ExtUtils::Manifest;
 use Term::ANSIColor;
-require "perl2wrapper_ergatis.pl";
-require "python2wrapper_ergatis.pl";
-require "julia2wrapper_ergatis.pl";
+require "./perl2wrapper_ergatis.pl";
+require "./python2wrapper_ergatis.pl";
+require "./julia2wrapper_ergatis.pl";
 use strict;
 
 $|++;

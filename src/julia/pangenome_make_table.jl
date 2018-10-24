@@ -310,4 +310,4 @@ function main()
 end
 
 main()
-quit()
+exit()
