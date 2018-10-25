@@ -51,6 +51,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use DBI;
 use Pod::Usage;
 use Data::Dumper;
+use Carp;
 
 ##############################
 my $dbh;
