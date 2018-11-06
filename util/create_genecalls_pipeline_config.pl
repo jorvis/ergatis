@@ -7,13 +7,9 @@ create_genecalls_pipeline_config.pl - Will create a pipeline.layout and pipeline
 =head1 SYNOPSIS
 
  USAGE: create_genecalls_pipeline_config.pl
-    --coords_file=/path/to/coords.tsv
-    --pseudomolecule_file=/path/to/pseudo.fsa
-    --genome="Homo sapiens"
-    --abbreviation="hs"
-    --repository_root=/path/to/repo/root
      [ --templates_directory|-t=/path/to/ergatis/global_pipeline_templates
        --output_directory=/path/to/directory
+       --load|-l=1
        --log|-L=/path/to/file.log
        --debug|-D=3
        --help
@@ -21,27 +17,16 @@ create_genecalls_pipeline_config.pl - Will create a pipeline.layout and pipeline
 
 =head1 OPTIONS
 
-B<--coords_file, -c>
-    Path to tab-delimited file consisting of feature ID, start, and stop coordinates
-
-B<--pseudomolecule_file, -p>
-    Path to FASTA-formatted pseudomolecule file
-
-B<--genome, -g>
-    The name of the genome.
-
-B<--abbreviation, -a>
-    Abbreviation or project name to use when naming output
-
-B<--repository_root, -r>
-    The path to store Ergatis workflow and output files
-
 B<--templates_directory,-t>
     The directory get the templates from
 
 B<--output_directory,-o>
     The directory of where to write the output pipeline.layout and pipeline.config file.
     Defaults to current directory.
+
+B<--load,-l>
+    Default = 0
+    To load the database into a chado instance
 
 B<--log,-L>
     Logfile.
@@ -102,11 +87,7 @@ my $pipelines = {
 
 my %options;
 my $results = GetOptions (\%options,
-                          "coords_file|c=s",
-                          "pseudomolecule_file|p=s",
-                          "genome|g=s",
-                          "abbreviation|a=s",
-                          "repository_root|r=s",
+                          "load|l=s",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
 						  "log|L=s",
@@ -128,9 +109,9 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
 
 # Write the pipeline.layout file
 &write_pipeline_layout( $layout_writer, sub {
-   my ($writer) = @_;
-   &write_include($writer, $pipelines->{'genecalls'});
-   &write_include($writer, $pipelines->{'load'});
+    my ($writer) = @_;
+    &write_include($writer, $pipelines->{'genecalls'});
+    &write_include($writer, $pipelines->{'load'}) if $included_subpipelines{'load'};
 });
 
 # end the writer
@@ -139,12 +120,7 @@ $layout_writer->end();
 my %config;
 
 &add_config( \%config, $pipelines->{'genecalls'} );
-&add_config( \%config, $pipelines->{'load'} );
-
-$config{'global'}{'$;INPUT_FASTA$;'} = $options{'pseudomolecule_file'};
-$config{'global'}{'$;COORDS_FILE$;'} = $options{'coords_file'};
-$config{'global'}{'$;GENOME$;'} = $options{'genome'};
-$config{'global'}{'$;ABBREVIATION$;'} = $options{'abbreviation'};
+&add_config( \%config, $pipelines->{'load'} ) if $included_subpipelines{'load'};
 
 # open config file for writing
 open( my $pcfh, "> $pipeline_config") or &_log($ERROR, "Could not open $pipeline_config for writing: $!");
@@ -157,10 +133,7 @@ close($pcfh);
 
 
 print "Wrote $pipeline_layout and $pipeline_config\n";
-
-my $repo_root = $options{'repository_root'};
-`perl /home/sadkins/devel/bin/run_prok_pipeline.pl -l $pipeline_layout -c $pipeline_config -r $repo_root`;
-exit 0
+exit 0;
 
 sub write_config {
     my ($config, $fh) = @_;
@@ -250,12 +223,9 @@ sub check_options {
    &_pod if( $opts->{'help'} );
    open( $logfh, "> $opts->{'log'}") or die("Can't open log file ($!)") if( $opts->{'log'} );
    
-    my @reqs = qw(coords_file pseudomolecule_file genome abbreviation repository_root);
-    foreach my $req ( @reqs ) {
-        die("Option $req is required") unless( exists( $opts->{$req} ) );
-    }
-   $outdir = $opts->{'output_directory'} if( $opts->{'output_directory'} );
-   $template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
+    $outdir = $opts->{'output_directory'} if( $opts->{'output_directory'} );
+    $template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
+    $included_subpipelines{'load'} = 1 if( $opts->{'load'} );
 }
 
 sub _log {
