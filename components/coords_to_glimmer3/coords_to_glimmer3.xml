@@ -24,7 +24,7 @@
             <name>add strand to coords file</name>
             <state>incomplete</state>
             <executable>sed</executable>
-            <arg>-e 's/$/\t\+/' $;INPUT_FILE$;</arg>
+            <arg>-e 's/$/\t\+/' $;COORDS_FILE$;</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</value>
