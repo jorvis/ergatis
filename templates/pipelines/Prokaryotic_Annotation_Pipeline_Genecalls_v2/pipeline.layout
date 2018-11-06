@@ -10,6 +10,10 @@
             <state>incomplete</state>
             <name>pmarks2bsml.genecalls</name>
         </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>coords_to_glimmer3.genecalls</name>
+        </commandSet>
 		<commandSet type="parallel">
              <state>incomplete</state>
                 <commandSet type="serial">
@@ -114,15 +118,7 @@
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<name>parse_evidence.hmmpfam3_post</name>
-			</commandSet>
-			<commandSet type="serial">
-				<state>incomplete</state>
 				<name>parse_evidence.ber_pre</name>
-			</commandSet>
-			<commandSet type="serial">
-				<state>incomplete</state>
-				<name>parse_evidence.ber_post</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
@@ -148,10 +144,6 @@
 		<commandSet type="serial">
 			<state>incomplete</state>
 			<name>pipeline_summary.default</name>
-		</commandSet>
-		<commandSet type="serial">
-			<state>incomplete></state>
-			<name>prokpipe_consistency_checks.bsml</name>
 		</commandSet>
 	</commandSet>
 </commandSetRoot>
