@@ -19,6 +19,7 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
+        <!--Processing-->
         <command>
             <type>RunUnixCommand</type>
             <name>add strand to coords file</name>
@@ -30,18 +31,6 @@
                 <value>$;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</value>
             </param>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>add header to file</name>
-            <state>incomplete</state>
-            <executable>echo</executable>
-            <arg>">$;PROJECT_ABBREVIATION$;" | cat - $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
-            <param>
-                <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/glimmer3.predict</value>
-            </param>
-        </command>
-        <!--Processing-->
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
         <!--Postprocessing-->
@@ -62,24 +51,6 @@
                 <key>--output_list</key>
                 <value>$;OUTPUT_LIST$;</value>
             </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>create fasta file list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>
-                <key>--regex</key>
-                <value>".*(\.fsa|\.fasta)$"</value>
-            </param>					
-            <param>
-                <key>--output_list</key>
-                <value>$;FASTA_OUT_LIST$;</value>
-            </param>		    
         </command>
     </commandSet>
 </commandSetRoot>

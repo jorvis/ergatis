@@ -5,6 +5,17 @@
         <name>coords_to_glimmer3 component</name>
         <command>
             <type>RunUnixCommand</type>
+            <name>add header to file</name>
+            <state>incomplete</state>
+            <executable>echo</executable>
+            <arg>">$(head -1 $;I_FILE_PATH$;)" | cat - $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/glimmer3.predict</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
             <name>glimmer32bsml</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/glimmer32bsml</executable>
@@ -14,7 +25,7 @@
             </param>
             <param>  
                 <key>--input_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/glimmer3.predict</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/glimmer3.predict</value>
             </param>
             <param>  
                 <key>--output</key>
