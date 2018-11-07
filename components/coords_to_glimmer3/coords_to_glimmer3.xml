@@ -78,7 +78,7 @@
             </param>					
             <param>
                 <key>--output_list</key>
-                <value>$;FASTA_LIST$;</value>
+                <value>$;FASTA_OUT_LIST$;</value>
             </param>		    
         </command>
     </commandSet>
