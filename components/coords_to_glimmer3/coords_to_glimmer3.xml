@@ -63,5 +63,23 @@
                 <value>$;OUTPUT_LIST$;</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create fasta file list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*(\.fsa|\.fasta)$"</value>
+            </param>					
+            <param>
+                <key>--output_list</key>
+                <value>$;FASTA_LIST$;</value>
+            </param>		    
+        </command>
     </commandSet>
 </commandSetRoot>

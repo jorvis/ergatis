@@ -8,11 +8,11 @@
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
-            <name>pmarks2bsml.genecalls</name>
+            <name>coords_to_glimmer3.genecalls</name>
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
-            <name>coords_to_glimmer3.genecalls</name>
+            <name>pmarks2bsml.genecalls</name>
         </commandSet>
         <commandSet type="parallel">
              <state>incomplete</state>
