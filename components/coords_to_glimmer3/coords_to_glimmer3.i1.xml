@@ -5,33 +5,12 @@
         <name>coords_to_glimmer3 component</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>get pmark locations</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/get_pmark_locations</executable>
-            <param>  
-                <key>--input_file</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>  
-                <key>--output_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.pmarks</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>symlink fasta to output dir</name>
-            <state>incomplete</state>
-            <executable>ln</executable>
-            <arg>-s $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;.</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>glimmer32bsml</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/glimmer32bsml</executable>
             <param>  
                 <key>--fasta_input</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;</value>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--input_file</key>

@@ -32,10 +32,10 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>add strand to coords file</name>
+            <name>add header to file</name>
             <state>incomplete</state>
-            <executable>sed</executable>
-            <arg>-e 's/^/>/' $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
+            <executable>echo</executable>
+            <arg>">$;PROJECT_ABBREVIATION$;" | cat - $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/glimmer3.predict</value>

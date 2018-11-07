@@ -39,7 +39,7 @@ if( $options{'help'} ){
 
 ## Make sure everything passed was correct
 check_parameters(\%options);
-determine_pmark_coords($options{'input_file'}, $options{'linker_seq'}, $options{'out_file'});
+determine_pmark_coords($options{'input_file'}, $options{'linker_sequence'}, $options{'output_file'});
 
 # Subroutine to check the supplied paramaters are correct
 sub check_parameters {
@@ -94,16 +94,17 @@ sub determine_pmark_coords {
     ## Concatenate the last contig sequence
 	$contig_hash{$header} = $seq if(defined($header));
 
-    ## Header for the pseudomolecule	
+    ## Print pmarks to file
+    my $index = 0;
     foreach my $head (keys %contig_hash) {
         my $offset = 0;
         my $result = index($contig_hash{$head}, $linker, $offset);
         while ($result != -1) {
-	        print POUT ">$head\n";
             $linker_start = $result;
             $linker_end = $linker_start + $linker_len;
-            print POUT "$linker_start\t$linker_end\n";
+            print POUT ">${head}_${index}\t$linker_start\t$linker_end\n";
             $offset = $result + 1;
+            $index++;
             $result = index($contig_hash{$head}, $linker, $offset);
         }
     }
