@@ -8,7 +8,7 @@
             <name>add header to file</name>
             <state>incomplete</state>
             <executable>echo</executable>
-            <arg>">$(head -1 $;I_FILE_PATH$;)" | cat - $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
+            <arg>"$(head -1 $;I_FILE_PATH$;)" | cat - $;OUTPUT_DIRECTORY$;/glimmer3.step1.txt</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/glimmer3.predict</value>
