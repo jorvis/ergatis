@@ -333,7 +333,7 @@ sub map_headers_to_loci {
 
     foreach my $seq_id ( @ordered_seq_ids ) {
         foreach my $group_set ( sort by_end3 values %{$input_sequences{$seq_id}->{'features'}} ) {
-            my $poly = $group_set->{'polypeptide'};
+            my $poly = $group_set->{'polypeptide'}->{'attributes'}->{'id'};
             my $locus_prefix = $map_headers{$poly};
             my $gene = $group_set->{'gene'};
             my $tmp = {
