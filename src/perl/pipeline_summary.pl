@@ -324,7 +324,7 @@ sub map_headers_to_loci {
         my @fields = split;
         $map_headers{$fields[1]} = $fields[0];
     }
-    close FH
+    close FH;
 
     #we want to order the sequences based on length.  And we only want to order the sequences
     #which contain features.
