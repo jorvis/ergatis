@@ -109,7 +109,7 @@ sub main {
 	chomp $pseudofile;	# Wasn't chomped when pushed into array
     if (defined $options{'coords_file'}){
         $order_file = $options{'coords_file'};
-    else {
+    } else {
 	    $order_file = $pseudofile . ".order";
     }
     $outfile = $options{'output_file'};
