@@ -147,7 +147,7 @@ sub get_ordered_transcripts {
 	while (my $line = <FR>) {
 		chomp $line;
 		#polypeptide CDS transcript pseudomolecule start:end
-		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+(\d+):\d+\/0$/) {
+		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+(\d+):\d+\/(0|1)$/) {
 			my $key = $2;
 			my $transcript = $1;
 			&_log($ERROR, "Multiple entries found for starting coordinate $key") if (exists $data{$key});
@@ -201,7 +201,7 @@ sub print_mapped_header_transcript {
 	while (my $line = <FR>) {
 		chomp $line;
 		#polypeptide CDS transcript pseudomolecule start:end
-		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+\d+:\d+\/0$/) {
+		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+\d+:\d+\/(0|1)$/) {
 			my $transcript = $1;
 			$data{$transcript} = $line;
 		}

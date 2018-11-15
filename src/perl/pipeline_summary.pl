@@ -17,6 +17,7 @@ USAGE: pipeline_summary.pl
             --cog_search_bsml=/path/to/wu-blastp.bsml.list
             --cog_lookup=/path/to/COGS_file.info
             --cds_fasta=/path/to/CDS.fasta|CDS.fsa.list
+            --mapping_file=/path/to/relationships.txt
             --polypeptide_fasta=/path/to/polypeptide.fasta|polypeptide.fsa.list
             --log=/path/to/file.log
             --debug=4
@@ -28,7 +29,6 @@ USAGE: pipeline_summary.pl
 
 B<--input_bsml,-i>
     [Required] Curated gene set bsml document (auto annotate output) (either a file or a list of files).
-    
 
 B<--other_bsml_lists,-b>
     [Optional] Comma separated list of bsml lists.  Any other list of 
@@ -44,6 +44,11 @@ B<--output_dir,-o>
 
 B<--locus_prefix,-u>
     [Optional] The prefix to be used in Feature/Attribute@name="locus" elements.
+
+B<--mapping_file,m>
+    [Optional] A tab-delimited mapping file that can be used to map initial contig headers as locus tags.
+    Used for genecalls pipeline.
+    First field is contig header, and then followed by polypeptide, CDS, and transcript IDs
 
 B<--organism,-r>
     [Optional] Must have at least two words separated by spaces.  The first word will be
@@ -114,6 +119,7 @@ my @input_files;
 my @other_files;
 my $output_directory;
 my $locus_prefix;
+my $mapping_file;
 my $locus_database = 'TIGR_moore';
 my $organism;
 my $trans_table = 11;
@@ -160,6 +166,7 @@ my $results = GetOptions(\%options,
 			  'nog_description|d=s',
                           'cds_fasta|f=s',
                           'polypeptide_fasta|p=s',
+                          'mapping_file|m=s',
                           'analysis_name=s',
                           'sourcename=s',
                           'log|l=s',
@@ -196,7 +203,9 @@ if( scalar( keys %seq_data_import_info ) > 0 ) {
 }
 
 #if we included a locus prefix, assign loci
-if( $locus_prefix ) {
+if ( $mapping_file ) {
+    &map_headers_to_loci;
+} elsif( $locus_prefix ) {
     &assign_loci;
 }
 
@@ -305,6 +314,38 @@ sub add_seq_data_import {
             }
         };
     }
+}
+
+sub map_headers_to_loci {
+    my %map_headers;
+    open (FH, $mapping_file) || die "Cannot open $mapping_file for reading:$!\n";
+    while (<FH>) {
+        chomp;
+        my @fields = split;
+        $map_headers{$fields[1]} = $fields[0];
+    }
+    close FH
+
+    #we want to order the sequences based on length.  And we only want to order the sequences
+    #which contain features.
+    my @seqs_with_features = grep { exists( $input_sequences{$_}->{'features'} ) } keys %input_sequences;
+    my @ordered_seq_ids = sort by_molecule_length @seqs_with_features;
+
+    foreach my $seq_id ( @ordered_seq_ids ) {
+        foreach my $group_set ( sort by_end3 values %{$input_sequences{$seq_id}->{'features'}} ) {
+            my $poly = $group_set->{'polypeptide'};
+            my $locus_prefix = $map_headers{$poly};
+            my $gene = $group_set->{'gene'};
+            my $tmp = {
+                'database' => $locus_database,
+                'identifier' => $locus_prefix,
+                'identifier-type' => 'locus',
+            };
+            push( @{$gene->{'cross-references'}}, $tmp );
+
+        }
+    }
+
 }
 
 sub assign_loci {
@@ -859,6 +900,7 @@ sub check_parameters {
     $output_directory = $opts->{'output'};
     $locus_prefix = $opts->{'locus_prefix'};
     $locus_database = $opts->{'locus_database'} if( $opts->{'locus_database'} );
+    $mapping_file = $opts->{'mapping_file'};
 
     #make sure we can parse the species and genus from organism
     #if organism name is just a genus, then species is listed as 'unknown'
