@@ -94,6 +94,10 @@
                 <value>$;PSEUDOMOLECULE_FILE$;</value>
             </param>
             <param>
+                <key>--coords_file</key>
+                <value>$;COORDS_FILE$;</value>
+            </param>
+            <param>
                 <key>--output_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.final.tab</value>
             </param>

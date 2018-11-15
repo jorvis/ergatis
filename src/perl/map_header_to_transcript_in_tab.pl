@@ -11,7 +11,8 @@ map_header_to_transcript_in_tab.pl - Description
  	   --tabfile=/path/to/annotated.tab
        --feature_relationship_file=/path/to/some/bsml2featurerelaionship.mapping.txt
        --pseudomolecule_list=/path/to/multifasta.list
-       --print_mapping 1
+       --coords_file=/path/to/coords.txt
+       --print_mapping=/path/to/relationships.output
        --output_file=/path/to/transterm.file
      [ --log=/path/to/file.log
        --debug=3
@@ -25,6 +26,8 @@ B<--tabfile,-t> Annotation tabfile.
 B<--feature_relations_file, -r> A bsml2featurerelationship mapping file
 
 B<--pseudomolecule_list, -p> List file pointing to a pseudomolecule fasta file.  The filename will be used to grab the contig order file that was also outputted from the create_pseudomolecule script.  Needs to only be 1 file in list
+
+B<--coords_file, -c> Optional.  Provide a tab-delimited coordinates file featuring the contig ID, start, and end coordinates.  If not provided the script will use the .order file in the same directory as the pseudomolecule.
 
 B<--output_file, -o> Will be new tabfile with headers instead of transcript IDs at the start
 
@@ -87,6 +90,7 @@ sub main {
                          "tabfile|t=s",
                          "feature_relationship_file|r=s",
                          "pseudomolecule_list|p=s",
+                         "coords_file|c=s",
                          "output_file|o=s",
                          "print_mapping|m=s",
                          "log|l=s",
@@ -103,7 +107,11 @@ sub main {
 	&_log($ERROR, "Currently only supporting a list file of only 1 pseudomolecule file path...check back later\n") if (scalar @pseudo_files > 1);
 	$pseudofile = shift(@pseudo_files);
 	chomp $pseudofile;	# Wasn't chomped when pushed into array
-	$order_file = $pseudofile . ".order";
+    if (defined $options{'coords_file'}){
+        $order_file = $options{'coords_file'};
+    else {
+	    $order_file = $pseudofile . ".order";
+    }
     $outfile = $options{'output_file'};
 
     $headers = get_ordered_headers($order_file);
