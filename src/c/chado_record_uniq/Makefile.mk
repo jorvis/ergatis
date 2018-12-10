@@ -1,7 +1,7 @@
 LD_LIB_PATH = /usr/local/packages/gcc/lib64
 CC = g++
 CFLAGS =  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE
-ORIG_CXXFLAGS = -Wall -I. -rpath=$(LD_LIB_PATH)
+ORIG_CXXFLAGS = -Wall -I. 
 
 ifeq ($(BUILD), Debug)
 CXXFLAGS = $(ORIG_CXXFLAGS) -D_DEBUG -g
@@ -16,7 +16,7 @@ endif
 
 OBJ_FILES = $(SRC:%=%.o)
 %.o:	%.cpp
-	$(CC) $(CFLAGS) $(CXXFLAGS) -c $<
+	$(CC) $(CFLAGS) $(CXXFLAGS) -c -rpath=$(LD_LIB_PATH) $<
 
 $(APP):	$(OBJ_FILES)
 
