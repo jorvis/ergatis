@@ -111,7 +111,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
 &write_pipeline_layout( $layout_writer, sub {
     my ($writer) = @_;
     &write_include($writer, $pipelines->{'genecalls'});
-    &write_include($writer, $pipelines->{'load'}) if $included_subpipelines{'load'};
+    &write_include($writer, $pipelines->{'load'}, "pipeline.genecalls.layout") if $included_subpipelines{'load'};
 });
 
 # end the writer
