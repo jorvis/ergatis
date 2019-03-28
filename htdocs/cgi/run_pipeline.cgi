@@ -9,6 +9,7 @@ use Ergatis::Pipeline;
 use Ergatis::SavedPipeline;
 use File::Copy;
 use XML::Writer;
+use FindBin qw($Bin);
 
 my $q = new CGI;
 
@@ -41,6 +42,9 @@ my $email_user = $$qvars{email_notify} || "";
 
 ## we're either creating a new pipeline, or re-running
 if ( $$qvars{rerun} ) {
+    # If rerunning pipeline, reset grid node assignments
+    my $cmd = "perl $Bin/dceSpecChanger.pl $$qvars{pipeline_xml}";
+    system($cmd);
     $pipeline = Ergatis::Pipeline->new( path => $$qvars{pipeline_xml},
                                         id => $$qvars{pipeline_id},
                                       );
