@@ -50,6 +50,7 @@ if [ ! -d "$spades_bin" ]; then
 	exit 1
 fi
 
+export PATH=/usr/local/packages/python-3.5.2/bin:$PATH; export LD_LIBRARY_PATH=/usr/local/packages/python-3.5.2/lib:$LD_LIBRARY_PATH;
 cmd="${spades_bin}/spades.py --careful -o $out_dir"
 
 line_count=$(wc -l $input | cut -f1 -d' ')
