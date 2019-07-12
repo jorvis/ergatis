@@ -183,7 +183,10 @@ sub parse_line {
 	if ($subj =~ /^(UniRef100_\w+)\s+(.+)/){
 		$hit = $1;
 		$desc = $2;
-	}
+	} else {
+        $hit = $subj;
+        $desc = "NA"
+    }
 	$btab_arr[5] = $hit;
 	$btab_arr[6] = $q_start;
 	$btab_arr[7] = $q_end;
@@ -216,9 +219,16 @@ sub get_hit_len {
 	my $acc;
 	if ($hit =~/UniRef100_(\w+)/){
 		$acc = $1;
-	}	
-	
-	my $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
+	} else {
+        $acc = $hit;
+        chomp $acc;
+    }
+	my $sth;
+    if ($hit =~/UniRef100_(\w+)/){
+	    $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
+    } else {
+        $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
+    }
 	$sth->execute($acc);
 	
 	# Should only have 1 row and 1 value;
