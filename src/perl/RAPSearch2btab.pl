@@ -223,12 +223,7 @@ sub get_hit_len {
         $acc = $hit;
         chomp $acc;
     }
-	my $sth;
-    if ($hit =~/UniRef100_(\w+)/){
-	    $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
-    } else {
-        $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
-    }
+	my $sth =  $dbh->prepare("SELECT res_length FROM entry_acc WHERE accession = ?");
 	$sth->execute($acc);
 	
 	# Should only have 1 row and 1 value;
