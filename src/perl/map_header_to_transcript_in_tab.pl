@@ -77,6 +77,7 @@ my $outfile;
 my $mapping_path = undef;
 
 my $headers;	#array_ref
+my $contig_order;   #array_ref
 my $transcripts;	#array_ref
 ####################################################
 
@@ -114,8 +115,8 @@ sub main {
     }
     $outfile = $options{'output_file'};
 
-    $headers = get_ordered_headers($order_file);
-    $transcripts = get_ordered_transcripts($frfile);
+    ($headers, $contig_order) = get_ordered_headers($order_file);
+    $transcripts = get_ordered_transcripts($frfile, $contig_order);
     #print "scalar headers: " . scalar(@$headers) . "\n";
     #print "scalar transcripts: " . scalar(@$transcripts) . "\n";
     &_log($ERROR, "Incorrect number of headers to transcript IDs\n". scalar @$headers. " headers to ". scalar @$transcripts. " transcripts\n") if (scalar @$headers != scalar @$transcripts);
@@ -129,37 +130,59 @@ sub get_ordered_headers {
 	my $order = shift;
 	my @headers;
 	open ORDER, $order or die "Cannot open pseudomolecule ordering file $order for reading: $!\n";
+    my $contig_prefix = "";
+    my @contig_order;  # Keep track of contig order
 	while (my $line = <ORDER>) {
 		chomp $line;
+        # If coords file has fasta-like headers add them to mapping
+        if ($line =~ /^>/) {
+            $contig_prefix = substr($line, 1);
+            push @contig_order, $contig_prefix;
+            next;
+        }
 		my @split = split(/\t/, $line);
-		push @headers, $split[0];
+		push @headers, $contig_prefix.";-;".$split[0];
 	}
 	close ORDER;
-	return \@headers;
+	return (\@headers, \@contig_order);
 }
 
 # Get list of transcript IDs sorted by coordinate position
 sub get_ordered_transcripts {
-	my ($frfile) = @_;
+	my ($frfile, $contig_order) = @_;
 	my @transcripts;
 	my %data;
 	open FR, $frfile or die "Cannot open feature_relationship file $frfile for reading: $!\n";
 	while (my $line = <FR>) {
 		chomp $line;
 		#polypeptide CDS transcript pseudomolecule start:end
-		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+(\d+):\d+\/(0|1)$/) {
-			my $key = $2;
+		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+(\S+)\s+(\d+):\d+\/(0|1)$/) {
 			my $transcript = $1;
-			&_log($ERROR, "Multiple entries found for starting coordinate $key") if (exists $data{$key});
-			$data{$key} = $transcript;
+            my $contig = $2;
+			my $key = $3;
+			&_log($ERROR, "Multiple entries found for starting coordinate $key for contig $contig") if (exists $data{$contig}{$key});
+			$data{$contig}{$key} = $transcript;
 		}
 	}
 
-	#get numerically sorted version of transcript IDs
-	foreach my $k (sort {$a <=> $b} keys %data) {
-		#print $k, "\t", $data{$k}, "\n";
-		push @transcripts, $data{$k};
-	}
+	#get contig- and numerically-sorted version of transcript IDs
+    if (@{$contig_order}) {
+        foreach my $contig (@{$contig_order}) {
+            foreach my $k (sort {$a <=> $b} keys %{$data{$contig}}) {
+                #print $k, "\t", $data{$contig}{$k}, "\n";
+                push @transcripts, $data{$contig}{$k};
+            }
+        }
+    } else {
+        # Should only be one contig
+        foreach my $contig (keys %data) {
+            foreach my $k (sort {$a <=> $b} keys %{$data{$contig}}) {
+                #print $k, "\t", $data{$contig}{$k}, "\n";
+                push @transcripts, $data{$contig}{$k};
+            }
+        }
+
+    }
 
 	close FR;
 	return \@transcripts;
@@ -176,6 +199,7 @@ sub sub_in_headers_in_tabfile {
 		#The last number in the ID may be different (example -> .1 and .2 for pre/post overlap analysis)
 		(my $t2 = $t) =~ s/\.\d+$//;
 		my $h = find_header($t2, $headers, $transcripts);
+        $h =~ s/^;-;//; #   If headers only had a single-contig, just remove the opening field spacer.
 		$line =~ s/$t/$h/;
 		print OUT $line . "\n";
 	}
@@ -187,8 +211,9 @@ sub sub_in_headers_in_tabfile {
 # Search for the header in its array by determining the index position of the current transcript
 sub find_header {
 	my ($t, $headers, $transcripts) = @_;
-	#Grep for the chopped transcript ID, and get index number
-	my ($index) = grep {$$transcripts[$_] =~ /$t/} 0..(scalar @$transcripts - 1);
+	#Grep for the parsed transcript ID, and get index number
+    # Use =~ instead of 'eq' since $transcripts val may include version number
+	my ($index) = grep {$$transcripts[$_] =~ $t } 0..(scalar @$transcripts - 1);
 	return $$headers[$index];
 }
 
@@ -201,8 +226,9 @@ sub print_mapped_header_transcript {
 	while (my $line = <FR>) {
 		chomp $line;
 		#polypeptide CDS transcript pseudomolecule start:end
-		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+\S+\s+\d+:\d+\/(0|1)$/) {
+		if ($line =~ /^\S+\s+\S+\s+(\S+)\s+(\S+)\s+\d+:\d+\/(0|1)$/) {
 			my $transcript = $1;
+            my $contig = $2;
 			$data{$transcript} = $line;
 		}
 	}

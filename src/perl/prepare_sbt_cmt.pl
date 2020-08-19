@@ -20,6 +20,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 
 # Include packages here
+use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use Data::Dumper;
 
@@ -29,7 +30,7 @@ use Data::Dumper;
 
 # This is the URI link to pass params to in order to generate a .sbt file
 my $SUBMISSION_TEMPLATE =
-  'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
+    'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
 
 ###########
 # GLOBALS #
@@ -222,14 +223,23 @@ sub prepareSbt {
 #
 sub send_request {
     my ( $url, $post ) = @_;
-    my $ua = LWP::UserAgent->new;
-    my $res = $ua->post( $url, Content => $post );
+    my %ssl_options = (SSL_version => 'SSLv3');
 
-    #print Dumper($post); die;
+    my $ua = LWP::UserAgent->new(
+        #ssl_opts => \%ssl_options,
+        #ssl_opts => { verify_hostname => 0 },
+    );
+
+    my $req = POST $url;
+    $req->content_type('application/x-www-form-urlencoded');
+    $req->content($post); 
+    #my $res = $ua->post( $url, Content => $post );
+
+    print Dumper($post);
+    my $res = $ua->request($req);
+    #print $res->as_string;
     if ( !$res->is_success ) {
-
-        #print "POST", "\t", $res->status_line . "\n";
-        die $res->content, "\n";
+        die $res->as_string, "\n";
     }
     return $res->content;
 
@@ -449,7 +459,7 @@ prepare_sbt_cmt.pl - Script to take precompiled tabular data and submit to the N
 
 =head1 AUTHOR
 
-	Shaun Adkind
+	Shaun Adkins
 	Bioinformatics Software Engineer
 	Institute for Genome Sciences
 	School of Medicine
