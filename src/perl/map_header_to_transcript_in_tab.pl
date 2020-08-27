@@ -141,7 +141,7 @@ sub get_ordered_headers {
             next;
         }
 		my @split = split(/\t/, $line);
-		push @headers, $contig_prefix.";-;".$split[0];
+		push @headers, $split[0];
 	}
 	close ORDER;
 	return (\@headers, \@contig_order);
@@ -199,7 +199,6 @@ sub sub_in_headers_in_tabfile {
 		#The last number in the ID may be different (example -> .1 and .2 for pre/post overlap analysis)
 		(my $t2 = $t) =~ s/\.\d+$//;
 		my $h = find_header($t2, $headers, $transcripts);
-        $h =~ s/^;-;//; #   If headers only had a single-contig, just remove the opening field spacer.
 		$line =~ s/$t/$h/;
 		print OUT $line . "\n";
 	}
