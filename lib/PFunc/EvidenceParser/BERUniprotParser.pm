@@ -264,7 +264,7 @@ sub _is_name_ambiguous {
     my $retval = 0;
     
     my $ambiguous_words_regex = 
-        join("|", qw(hypothetical probably unknown putative related probable possible conserved) );
+        join("|", qw(hypothetical probably unknown putative related uncharacterized probable possible conserved) );
     if( $name =~ /($ambiguous_words_regex)/ ) {
         $retval = 1;
     }
