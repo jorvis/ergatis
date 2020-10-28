@@ -230,13 +230,13 @@ sub send_request {
         #ssl_opts => { verify_hostname => 0 },
     );
 
-    my $req = POST $url;
-    $req->content_type('application/x-www-form-urlencoded');
-    $req->content($post); 
-    #my $res = $ua->post( $url, Content => $post );
+    #my $req = POST $url;
+    #$req->content_type('application/x-www-form-urlencoded');
+    #$req->content($post); 
+    my $res = $ua->post( $url, Content => $post );
 
     print Dumper($post);
-    my $res = $ua->request($req);
+    #my $res = $ua->request($req);
     #print $res->as_string;
     if ( !$res->is_success ) {
         die $res->as_string, "\n";
