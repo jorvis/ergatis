@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use File::Mirror;
 use File::Basename;

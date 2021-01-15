@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 =head1 NAME
 
@@ -28,6 +28,9 @@ format to be consumed and manipulated by the user.
 =cut 
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
@@ -87,6 +90,11 @@ my @required_dirs = ( $pipeline_root, "$repository_root/workflow", "$repository_
 for my $dir ( @required_dirs ) {
     if (! -d $dir ) {
         generate_error_response($q, 400, "directory $dir not found");
+    } else {
+        ## make sure it is writeable
+        if (! -w $dir) {
+            generate_error_response($q, 400, "$dir not writable");
+        }
     }
 }
 

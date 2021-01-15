@@ -1,7 +1,9 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl -w
 
 use strict;
-use warnings;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use IPD::Client;
 use IPD::IPDObject::Project;
 use IPD::IPDObject::Sample;

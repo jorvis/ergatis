@@ -1,7 +1,9 @@
-#!/usr/bin/env perl
+#!/usr/local/bin/perl -w
 
 use strict;
-use warnings;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use lib ("/usr/local/projects/ergatis/package-latest/lib/perl5");
 use Ergatis::Pipeline;

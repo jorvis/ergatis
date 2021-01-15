@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 =head1 DESCRIPTION
 
@@ -24,6 +24,9 @@ Arguments needed depend on the mode used.
 =cut
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::ConfigFile;

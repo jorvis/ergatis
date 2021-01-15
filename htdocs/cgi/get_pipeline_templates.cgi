@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
@@ -13,7 +16,6 @@ print $q->header( -type => 'text/html' );
 my $tmpl = HTML::Template->new( filename => 'templates/get_pipeline_templates.tmpl',
                                 die_on_bad_params => 1,
                               );
-
 my $project_templates = get_pipeline_templates( $q->param('path') );
 
 $tmpl->param( PROJECT_TEMPLATES => $project_templates );

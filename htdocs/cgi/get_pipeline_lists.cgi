@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Data::Dumper;
@@ -148,7 +151,7 @@ sub get_pipeline_lists {
             }
             
             ## If we are displaying pipelines tied to accounts we will only want to display those pipelines
-            if ( $per_account_pipelines && ! exists($account_pipelines->{$pipeline_id}) && ! is_admin_user($ergatis_cfg)) {
+            if ( $per_account_pipelines && ! exists($account_pipelines->{$pipeline_id}) ) {
                 next;
             }
 		

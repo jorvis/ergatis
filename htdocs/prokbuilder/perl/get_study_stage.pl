@@ -1,6 +1,8 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
 use warnings;
 use IPD::Client;
 use IPD::IPDObject::StudyStage;

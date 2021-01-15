@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 =head1  SUMMARY
 
@@ -18,7 +18,11 @@ based on default values set in the ergatis.ini
 
 =cut
 
+
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
@@ -35,16 +39,6 @@ my $tmpl = HTML::Template->new( filename => 'templates/edit_config.tmpl',
 
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-
-my $username = user_logged_in($ergatis_cfg);
-my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
-unless ($auth_method eq 'open' || defined($username)) {
-    print_error_page( ergatis_cfg => $ergatis_cfg,
-                      message => "You must be logged in to edit project configs",
-                      links => [],
-                    );
-    exit(0);
-}
 
 my $config_path = $q->param('config') || die "config is a required parameter";
 my $save = $q->param('save') || 0;

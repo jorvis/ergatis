@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
@@ -14,19 +17,6 @@ my $action = $q->param('action');
 my $repository_root = $q->param('repository_root');
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-
-my $username = user_logged_in($ergatis_cfg);
-my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
-unless ($auth_method eq 'open' || defined($username)) {
-    print $q->header( -type => 'text/html' );
-    print_error_page( ergatis_cfg => $ergatis_cfg,
-                      message => "You must be logged in to modify pipeline groups",
-                      links => [
-                                 { label => "pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=group" },
-                               ]
-                    );
-    exit(0);
-}
 
 unless ( $ids_passed && $action && $repository_root ) {
     print $q->header( -type => 'text/html' );

@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
@@ -42,11 +45,6 @@ my $error_msgs = [];
 ## Should we limit our display list to just those pipelines that the user has created
 my $per_account_pipelines = $ergatis_cfg->val('authentication', 'per_account_pipeline_security') || 0;
 
-## Set the LOGGED_IN template variable if authentication is on and our user is logged in. This 
-## variable controls whether or not the clone and archive/delete buttons are functional
-my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
-my $logged_in = $auth_method eq 'open' || defined($username) ? 1: 0;
-
 ## Check user configured build access
 my $require_login_for_pipeline_build = $ergatis_cfg->val('authentication', 'require_login_for_pipeline_build') || 0;
 
@@ -81,6 +79,11 @@ my @required_dirs = ( $pipeline_root, "$repository_root/workflow", "$repository_
 for my $dir ( @required_dirs ) {
     if (! -d $dir ) {
         &record_error("directory $dir not found");
+    } else {
+        ## make sure it is writeable
+        if (! -w $dir) {
+            &record_error("$dir not writable");
+        }
     }
 }
 
@@ -210,7 +213,6 @@ sub print_template {
     $tmpl->param( SHOW_PRE_CONTINUATION => $show_pre_continuation );
     $tmpl->param( SHOW_POST_CONTINUATION => $show_post_continuation );
     $tmpl->param( IS_PER_ACCOUNT_PIPELINES => $per_account_pipelines );
-    $tmpl->param( LOGGED_IN => $logged_in);
     $tmpl->param( USER => $username );
 
     ## print the template

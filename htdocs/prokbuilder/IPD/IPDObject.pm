@@ -10,7 +10,6 @@ use strict;
 use warnings;
 use IPD::Client;
 use XML::Simple;
-use Data::Dumper;
 use IPD::Net;
 
 sub new {
@@ -69,14 +68,9 @@ B<Returns:> A hash reference that essentially becomes the attributes for an obje
 
 sub XML2Object {	#Converts XML representation into a hash-ref
     my ($class, $xml) = @_;
-    my $elements = XMLin($xml, SuppressEmpty => 1, KeyAttr => [], NoAttr => 1);	# Convert XML->hashref
+    return XMLin($xml, SuppressEmpty => 1, KeyAttr => [], NoAttr => 1);	# Convert XML->hashref
     # if there are multiple entries for an XML query, KeyAttr => [] will fold these entries into an array of hashes.  Otherwise it will remain a standard hash.
-
-### Data::Dumper used for printing hash for debugging purposes
-open FILE, ">/home/sadkins/logs/dump_ipd_xml.txt" or die;
-print FILE Dumper($elements);
-close FILE;
-    return $elements;	#can use Data::Dumper to read hash
+    # can use Data::Dumper to read hash
 }
 
 1;

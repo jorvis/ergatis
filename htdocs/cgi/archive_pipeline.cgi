@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
@@ -31,17 +34,6 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $archive_root = $ergatis_cfg->val( 'paths', 'pipeline_archive_root' ) || die "pipeline_archive_root not defined in ergatis.ini file";
 my $temp_space   = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
 my $log_file;
-
-my $username = user_logged_in($ergatis_cfg);
-unless ($username) {
-    print_error_page( ergatis_cfg => $ergatis_cfg,
-                      message => "You must be logged in to archive or delete pipelines",
-                      links => [
-                                 { label => "pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },
-                               ]
-                    );
-    exit(0);
-}
 
 ## create the archive root if it doesn't exist
 unless ( -d $archive_root ) {

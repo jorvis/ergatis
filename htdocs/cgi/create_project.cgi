@@ -1,15 +1,15 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use File::Copy;
-use File::Temp qw/ tempfile /;
-use File::Spec;
 use HTML::Template;
-use JSON;
 
 umask(0000);
 
@@ -20,25 +20,14 @@ my $tmpl = HTML::Template->new( filename => 'templates/create_project.tmpl',
                                 die_on_bad_params => 0,
                               );
 
-my $repository_root = $q->param('repository_root') || '';
-my $user_attempted = $q->param('user_attempted') || 0;
-my $group_id = $q->param('group_id') || '';
-
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-my $username = user_logged_in($ergatis_cfg);
-my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
-unless ($auth_method eq 'open' || defined($username)) {
-    print_error_page( ergatis_cfg => $ergatis_cfg,
-                      message => "You must be logged in to create projects",
-                      links => []
-                    );
-    exit(0);
-}
-
 ## message to prompt the user to enter a project root
 my $enter_msg = 'enter project root directory';
+
+my $repository_root = $q->param('repository_root') || '';
+my $user_attempted = $q->param('user_attempted') || 0;
 
 ## don't just add a step here unless the conditionals below are updated accordingly.
 my $steps = [
@@ -80,81 +69,97 @@ my $steps = [
     },
 ];
 
-my $project_config = "$repository_root/workflow/project.config";
-my $default_config = $ergatis_cfg->val('paths', 'default_project_conf');
-
 ## if the project root is one of the defaults prefixes, the user hasn't entered it yet.
-if (! check_enter_project_root($repository_root, $ergatis_cfg, $enter_msg) ) {
+if (! check_enter_project_root() ) {
     if ( $user_attempted ) {
-        $steps->[0]->{failed} = 1;
+        $$steps[0]{failed} = 1;
     }
     
     print_template();
 }
+$$steps[0]{complete} = 1;
+     
+## check that the project root entered exists
+if (! -e $repository_root ) {
+    $$steps[1]{failed} = 1;
+    print_template();
+}
+$$steps[1]{complete} = 1;
 
-$steps->[0]->{complete} = 1;
+## check that the project root is writeable
+if (! -w $repository_root ) {
+    $$steps[2]{failed} = 1;
+    print_template();
+}
+$$steps[2]{complete} = 1;
 
-my $run_dir = $ergatis_cfg->val('paths', 'workflow_run_dir') || croak "workflow_run_dir not found in ergatis.ini";
-my $sudo_scripts_dir = "$run_dir/scripts";
+create_dir_and_record("$repository_root/workflow", 3);
+create_dir_and_record("$repository_root/workflow/runtime", 4);
+create_dir_and_record("$repository_root/workflow/runtime/pipeline", 5);
+create_dir_and_record("$repository_root/workflow/lock_files", 6);
+create_dir_and_record("$repository_root/workflow/project_id_repository", 7);
 
-my $current_user = user_logged_in($ergatis_cfg) || undef;
-my $run_string = "";
-
-## If our directory to execute sudo scripts from doesn't exist it should be created.
-## This should be created by whatever user executes ergatis CGI scripts
-if ( -d $run_dir ) {
-    if ( ! -d $sudo_scripts_dir ) {
-        ( mkdir -p $sudo_scripts_dir ) || croak "Failed to create sudo scripts directory: $sudo_scripts_dir : $!";
-    }
+## the project id repository needs a file created within it to verify that it's valid.
+##  see IdGenerator module for details.
+my $validation_file = "$repository_root/workflow/project_id_repository/valid_id_repository";
+if ( -f $validation_file ) {
+     $$steps[8]{complete} = 1;
+} elsif ( open(my $vfh, ">$validation_file") ) {
+     $$steps[8]{complete} = 1;
+     close $vfh;
 } else {
-        croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
+    $$steps[8]{failed_msg} = $!;
+    $$steps[8]{failed} = 1;
+    print_template();
 }
 
-## We need the directory we are currently executing in (CGI scripts directory)
-## to create commands in the shell script we will execute sudo'd as the user
-my $create_form_script = File::Spec->rel2abs( __FILE__ );
-my $cgi_dir = dirname($create_form_script);
+create_dir_and_record("$repository_root/output_repository", 9);
 
-$run_string = "sudo -u $current_user " if ($current_user);
-$run_string .= "$cgi_dir/bin/create_project.pl --repository_root=$repository_root --default_project_conf=$default_config";
-$run_string .= " --group_id=$group_id" if ($group_id);
+my $default_config = $ergatis_cfg->val('paths', 'default_project_conf');
+my $project_config = "$repository_root/workflow/project.config";
 
-my ($fh, $create_proj_script) = tempfile("create_project_XXXX", DIR => $sudo_scripts_dir, SUFFIX => '.sh', UNLINK => 1);
-print $fh '#!/bin/bash', "\n\n";
-print $fh "$run_string";
-$fh->flush();
-$fh->close();
+if (-e $default_config) {
+    if (! copy($default_config, $project_config) ) {
+        $$steps[10]{failed_msg} = "$!";
+        $$steps[10]{failed} = 1;
+        print_template();       
+    }
 
-chmod 0775, $create_proj_script;
-
-my $output = `$create_proj_script`;
-my $rc = ($? >> 8);
-
-if ($rc > 0) {
-    croak("Unable to execute create_project.pl script");
+    $$steps[10]{complete} = 1;
+    
+} else {
+    $$steps[10]{failed_msg} = "could not find default project config file specified in ergatis.ini : $default_config";
+    $$steps[10]{failed} = 1;
+    print_template();
 }
 
-$steps = parse_create_json($steps, $output);
+create_dir_and_record("$repository_root/workflow/project_saved_templates", 11);
+
+## if we get this far all steps were successful.  
 print_template(1);
 
-#############################################################
-#                     SUBROUTINES                           #
-#############################################################
+exit(0);
 
-###
-# Checks if our repository root passed in is one of the defaults or user 
-# supplied. If the repository root is a default the page is loaded fresh.
-###
 sub check_enter_project_root {
-    my ($repository_root, $ergatis, $enter_msg) = @_;
     return $repository_root && 
      $repository_root ne $ergatis_cfg->val('paths', 'default_project_root') &&
      $repository_root ne $enter_msg;
 }
 
-###
-# Prints the template for the create_project_form page
-### 
+sub create_dir_and_record {
+    my ($dir, $step_num) = @_;
+    
+    ## if the directory already exists, just mark success and go on.  else try to make it
+    if (! -d $dir ) {
+        if (! mkdir("$dir") ) {
+            $$steps[$step_num]{failed_msg} = $!;
+            $$steps[$step_num]{failed} = 1;
+            print_template();
+        }
+    }
+    $$steps[$step_num]{complete} = 1;
+}
+
 sub print_template {
     my $all_good = shift || 0;
 
@@ -174,31 +179,4 @@ sub print_template {
 
     print $tmpl->output;
     exit(0);
-}
-
-###
-# Parses the returned JSON from the create_project.pl script
-###
-sub parse_create_json {
-    my ($steps, $output) = @_;
-    my $decoded_json = decode_json($output);
-    
-    ## The decoded JSON should return a success or failure, and upon a failure
-    ## should give us what step number failed so that we can mark it down as 
-    ## a failure as well as why it failed.
-    if ($decoded_json->{'success'}) {
-        map { $_->{complete} = 1 } @$steps;
-    } else {
-        my $failure_step = int($decoded_json->{'failure_step'});
-
-        ## Need to mark all steps up to the failure point as complete
-        for (my $i = 0; $i < $failure_step; $i++) {
-            $steps->[$i]->{complete} = 1;
-        }
-
-        $steps->[$failure_step]->{failed} = 1;
-        $steps->[$failure_step]->{failed_msg} = ($decoded_json->{'message'} || '');
-    }
-    
-    return $steps;
 }

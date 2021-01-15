@@ -1,6 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/local/bin/perl -w
 
 use strict;
+use FindBin qw( $RealBin );
+use lib $RealBin;
+
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
@@ -31,7 +34,7 @@ my $email_on_default = $shared_cfg->val('project', '$;EMAIL_NOTIFICATION$;') || 
 my $email_user = "";
 my $email_domain = $ergatis_cfg->val('workflow_settings', 'email_domain');
 my $username = user_logged_in($ergatis_cfg);
-if ($username && $email_domain && $email_on_default) {
+if ($username && $email_domain) {
     $email_user = "$username\@$email_domain";
 } else {
     ## If the user isn't logged in and default email notifications is set to true 
@@ -109,7 +112,7 @@ for my $class ( @component_classes ) {
 }
 
 
-my $recent_pipelines = get_pipeline_templates( $build_area );
+my $recent_pipelines = []; #get_pipeline_templates( $build_area );
 my $project_templates = get_pipeline_templates( "$repository_root/workflow/project_saved_templates" );
 
 my $build_directory = "$build_area/" .temp_pipeline_id();
@@ -179,6 +182,9 @@ sub get_inputsets{
 		}
             	next unless( defined( $input_val ) ); # move here from below
 		if(!exists $uniqueinputs->{$input_type}->{$input_val}){
+			print STDERR "cname is not defined\n" unless( defined( $cname ) );
+			print STDERR "token is not defined\n" unless( defined( $token ) );
+			print STDERR "input_type is not defined\n" unless( defined( $input_type ) );
             	# next unless( defined( $input_val ) ); # was here, think this was wrong spot
 		    push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
 				  'VALUE'=>$input_val,
