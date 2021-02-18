@@ -2,10 +2,10 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>tblastn+ compute</name>
+        <name>ttblastn+ compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>run tblastn+</name>
+            <name>run ttblastn+</name>
             <state>incomplete</state>
 			<executable>$;BIN_DIR$;/run_blast_plus</executable>
             <param>
@@ -14,7 +14,7 @@
             </param>
             <param>
                 <key>--blast_type</key>
-                <value>tblastn</value>
+                <value>ttblastn</value>
             </param>
             <param>
                 <key>--query</key>
@@ -39,19 +39,19 @@
             <param>
                 <key>--out</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
-            </param>  
+            </param>
             <param>
                 <key>--other_opts</key>
                 <value>$;OTHER_OPTS$;</value>
-            </param>  
+            </param>
             <param>
                 <key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
-            </param>  
+            </param>
             <param>
                 <key>stderr</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
-            </param>  
+            </param>
 		</command>
         <command>
             <type>RunUnixCommand</type>
@@ -102,7 +102,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>tblastn_analysis</value>
+                <value>ttblastn_analysis</value>
             </param>
 	    <param>
                 <key>--split</key>
@@ -140,7 +140,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>tblastn_analysis</value>
+                <value>ttblastn_analysis</value>
             </param>
         </command>
         <command>
