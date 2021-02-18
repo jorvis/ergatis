@@ -2,10 +2,10 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>blastn+ compute</name>
+        <name>blastp+ compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>run blastn+</name>
+            <name>run blastp+</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/run_blast_plus</executable>
             <param>
@@ -14,7 +14,7 @@
             </param>
             <param>
                 <key>--blast_type</key>
-                <value>blastn</value>
+                <value>blastp</value>
             </param>
             <param>
                 <key>--query</key>
@@ -98,7 +98,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>blastn_analysis</value>
+                <value>blastp_analysis</value>
             </param>
 	    <param>
                 <key>--split</key>
@@ -136,7 +136,7 @@
             </param>
             <param>
                 <key>--analysis_id</key>
-                <value>blastn_analysis</value>
+                <value>blastp_analysis</value>
             </param>
         </command>
         <command>
