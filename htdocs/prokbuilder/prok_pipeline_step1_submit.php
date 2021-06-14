@@ -1,7 +1,7 @@
 <?php
 	$formFieldsArr = Array("rgene_algo" => "", "output_dir" => "Output directory", "log_file" => "Log file");
 	$args = "";
-	$local_dir = "/local/scratch/sadkins_devel/prok_pipeline_runs/pipeline_dir";
+	$local_dir = "/local/scratch/prok_pipeline_runs/pipeline_dir";
 	$errFlag = 0;
 	if (isset($_POST['bsubmit'])) {
 		if (isset($_POST['rgene_algo'])) {
