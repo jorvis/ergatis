@@ -111,7 +111,7 @@ foreach my $arg (@ARGV){
         exit(1);
     } elsif ( $arg =~/LIVE_BUILD/){
 	$build_dir = "../";
-    #$cbuild_dir = "../src/c";
+    $cbuild_dir = "../src/c";
 	$tbuild_dir = "../templates";
 	$samplebuild_dir = "../samples";
 	$sbuild_dir = "../src/shell";
@@ -140,18 +140,18 @@ print "Writing makefile to install directory $build_dir to $install_base\n";
 my $mm = WriteMakefile(
 	      'NAME'=>'ergatis',
 	      'EXE_FILES'=>$scripts,
-	      macro=>{BUILD_DIR => "$build_dir",T_BUILD_DIR=>"$tbuild_dir",SAMPLE_BUILD_DIR=>"$samplebuild_dir",S_BUILD_DIR=>"$sbuild_dir"},
-          #macro=>{BUILD_DIR => "$build_dir",C_BUILD_DIR=>"$cbuild_dir",T_BUILD_DIR=>"$tbuild_dir",SAMPLE_BUILD_DIR=>"$samplebuild_dir",S_BUILD_DIR=>"$sbuild_dir"},
+          macro=>{BUILD_DIR => "$build_dir",C_BUILD_DIR=>"$cbuild_dir",T_BUILD_DIR=>"$tbuild_dir",SAMPLE_BUILD_DIR=>"$samplebuild_dir",S_BUILD_DIR=>"$sbuild_dir"},
 	      'clean' =>{FILES => "MANIFEST.bak $wrapperstr README.symlinks"}
 	      );
 
 package MY;
 
+# SAdkins - removed 'c_apps' due to compiling issues in RHEL8
 sub MY::postamble { 
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps pipeline_templates r_scripts 
+ergatis_install : dirs samples shellwrappers pipeline_templates r_scripts 
 	@echo "Installing components"
 	find $(BUILD_DIR)/components -path '*svn*' -prune -o -print -type f -not -name software.config -not -name "*.tmpl" -exec install  {} ${WORKFLOW_DOCS_DIR} \;
 	find $(BUILD_DIR)/components -type f -name "*.tmpl" -exec install  {} ${WORKFLOW_DOCS_DIR}/documentation \;
