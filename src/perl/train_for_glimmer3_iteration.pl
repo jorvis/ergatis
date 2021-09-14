@@ -120,6 +120,9 @@ sub createPWM {
         open(USE, " $runCmd |") or
             $logger->logdie("Couldn't run command $runCmd ($!)");
 
+        # Attempt to prevent race condition
+        sleep(1);
+
         my $startUse = <USE>;
         close(USE);
 
