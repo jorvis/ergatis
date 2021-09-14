@@ -97,7 +97,7 @@ print "\nall modules found, carrying on\n\n";
 
 my $install_base;
 my $build_dir = '.';
-#my $cbuild_dir = 'src';
+my $cbuild_dir = 'src';
 my $tbuild_dir = 'global_pipeline_templates';
 my $samplebuild_dir = 'samples';
 my $sbuild_dir = 'shell';
