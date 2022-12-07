@@ -186,7 +186,7 @@ sub create_directory {
 }
 sub create_tar {
     my ($dir, $filename) = @_;
-    my $cmd = "cd $dir && tar -czf $filename ./*";
+    my $cmd = "cd $dir && tar -czf $filename .";
     run_cmd( $cmd );
 }
 
