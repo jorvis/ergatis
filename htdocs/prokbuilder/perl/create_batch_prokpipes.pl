@@ -131,7 +131,7 @@ sub parse_delimited_file {
         # Instantiate our new pipeline
         my $repo_root = $row[0];
         $repo_hash{$repo_root}++;
-        my $result = eval { system("/usr/bin/perl ./perl/run_prok_pipeline.pl --layout $layout_file --config $new_config --repository_root $repo_root 1>/dev/null") };
+        my $result = eval { system("/usr/local/bin/perl ./perl/run_prok_pipeline.pl --layout $layout_file --config $new_config --repository_root $repo_root 1>/dev/null") };
         print STDERR $@ unless ($result);	# Catch error if eval fails
         $count++;
     }
